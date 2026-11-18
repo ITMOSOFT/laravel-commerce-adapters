@@ -8,7 +8,7 @@ on:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -28,10 +28,7 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: mbstring, sqlite3, pdo_sqlite
           coverage: none
-      - uses: ramsey/composer-install@v3
-        with:
-          composer-options: --prefer-dist --no-interaction
-      - name: Resolve dependency matrix
+      - name: Install Composer dependencies
         run: composer update --no-interaction --prefer-dist --${{ matrix.dependency-version }}
       - name: Run PHPUnit
         run: composer test

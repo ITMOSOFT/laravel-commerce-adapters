@@ -23,7 +23,7 @@ The adapter then stores the resulting order reference in checkout metadata and c
 - PHP 8.3+
 - Laravel 12 or 13
 - `itmosoft/laravel-checkout`
-- `itmosoft/laravel-orders`
+- `itmosoft/laravel-orders` (v1.0.2 or later)
 
 ## Installation
 

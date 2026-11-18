@@ -31,17 +31,22 @@ git push -u origin main
 After the GitHub Actions workflow is green:
 
 ```bash
-git tag -a v0.1.0 -m "Initial commerce adapters release"
-git push origin v0.1.0
+git tag -a v0.1.1 -m "Fix minimum Orders dependency compatibility"
+git push origin v0.1.1
 ```
 
 ## GitHub Release
 
-**Title:** `v0.1.0 — Initial Commerce Adapters`
+**Title:** `v0.1.1 — Fix minimum Orders dependency compatibility`
 
 **Description:**
 
-### Added
+### Fixed
+- Raise the minimum `itmosoft/laravel-orders` dependency to `^1.0.2`, avoiding broken Composer metadata in releases v1.0.0 and v1.0.1.
+- Run one Composer dependency resolution per CI matrix job.
+- Pin GitHub Actions runner to Ubuntu 24.04.
+
+### Included
 - Optional Checkout → Orders adapter.
 - Maps checkout cart snapshots and totals to order records.
 - Preserves product morph identifiers, SKU, quantity, prices, item snapshots, options, addresses and shipping details.
@@ -58,4 +63,4 @@ git push origin v0.1.0
 
 ## Packagist
 
-After the GitHub repository and tag are available, submit `https://github.com/ITMOSOFT/laravel-commerce-adapters` to Packagist or update the existing package webhook. Verify that Packagist indexes `v0.1.0` before installing by version.
+After the GitHub repository and tag are available, submit `https://github.com/ITMOSOFT/laravel-commerce-adapters` to Packagist or update the existing package webhook. Verify that Packagist indexes `v0.1.1` before installing by version.

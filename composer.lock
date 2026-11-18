@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "560273872018e4bc77098717a34996eb",
+    "content-hash": "66d2bd15b58c81d083539911c4b087a9",
     "packages": [
         {
             "name": "brick/math",
@@ -9025,8 +9025,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "itmosoft/laravel-checkout": 20,
-        "itmosoft/laravel-orders": 20
+        "itmosoft/laravel-checkout": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

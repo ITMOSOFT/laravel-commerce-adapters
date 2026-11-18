@@ -2,8 +2,6 @@
 
 namespace ItmoSoft\CommerceAdapters\Tests;
 
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use ItmoSoft\Checkout\CheckoutServiceProvider;
 use ItmoSoft\CommerceAdapters\CommerceAdaptersServiceProvider;
 use ItmoSoft\Orders\OrdersServiceProvider;
