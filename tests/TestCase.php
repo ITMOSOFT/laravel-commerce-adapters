@@ -5,6 +5,7 @@ namespace ItmoSoft\CommerceAdapters\Tests;
 use ItmoSoft\Checkout\CheckoutServiceProvider;
 use ItmoSoft\CommerceAdapters\CommerceAdaptersServiceProvider;
 use ItmoSoft\Orders\OrdersServiceProvider;
+use ItmoSoft\Inventory\InventoryServiceProvider;
 use ItmoSoft\Payments\PaymentsServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
@@ -15,6 +16,7 @@ abstract class TestCase extends Orchestra
         return [
             CheckoutServiceProvider::class,
             OrdersServiceProvider::class,
+            InventoryServiceProvider::class,
             PaymentsServiceProvider::class,
             CommerceAdaptersServiceProvider::class,
         ];
@@ -36,6 +38,7 @@ abstract class TestCase extends Orchestra
         ]);
         $app['config']->set('itmosoft-commerce-adapters.checkout_orders.customer_type', 'user');
         $app['config']->set('itmosoft-commerce-adapters.payments_orders.enabled', true);
+        $app['config']->set('itmosoft-commerce-adapters.inventory_orders.enabled', true);
     }
 
     protected function setUp(): void

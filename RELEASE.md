@@ -1,63 +1,66 @@
-# Release instructions
+# Release v0.3.0
 
-## Package
+## Summary
+Adds an optional Inventory → Orders lifecycle adapter while retaining Checkout → Orders and Payments → Orders.
 
-- GitHub repository: `ITMOSOFT/laravel-commerce-adapters`
-- Composer package: `itmosoft/laravel-commerce-adapters`
-- Version: `v0.2.0`
-- Release title: `v0.2.0 — Payments-to-Orders Lifecycle Integration`
-- Description: `Adds an optional Payments-to-Orders adapter with aggregate capture/refund reconciliation, retry-safe failed-payment handling, idempotent order transitions, and integration tests. Preserves the existing Checkout-to-Orders adapter.`
-
-## Repository description
-
-`Optional integration adapters connecting independent ITMOSOFT Laravel commerce packages.`
-
-## Install and test
-
-```bash
-composer validate --strict
-composer update --no-interaction --prefer-dist
-composer test
-```
-
-Lowest dependency strategy:
+## Before release
 
 ```bash
 composer update --no-interaction --prefer-dist --prefer-lowest
 composer test
+composer update --no-interaction --prefer-dist --prefer-stable
+composer test
+composer validate --no-check-publish
 ```
 
-## User-run Git commands
+## GitHub release
 
-Run these only after local tests pass and the GitHub Actions matrix is green:
+**Tag:** `v0.3.0`
 
-```bash
-git add .
-git commit -m "feat: add payments-to-orders lifecycle adapter"
-git push origin main
+**Title:** `v0.3.0 – Inventory to Orders Integration`
 
-git tag v0.2.0
-git push origin v0.2.0
-```
+## Release notes
 
-Do not create the tag until CI is green. These commands are for the repository owner to run; no GitHub writes are performed by the assistant.
+### What's new
+- Reserve stock when an order enters processing.
+- Release active reservations when an order is cancelled.
+- Fulfil reservations and decrement on-hand stock when an order is completed.
+- Prevent duplicate reservations/fulfilments using deterministic order-line references.
+- Block processing when stock is insufficient.
+- Preserve captured payment records when inventory prevents order processing.
+- Configure a default stock location or override it in order/item metadata.
 
-## GitHub Release notes
+### Compatibility
+- PHP 8.3+
+- Laravel 12 and 13
+- `itmosoft/laravel-checkout`
+- `itmosoft/laravel-orders`
+- `itmosoft/laravel-payments`
+- `itmosoft/laravel-inventory`
 
-### What's Changed
-- Added Payments → Orders lifecycle synchronization.
-- Automatically advances pending orders to processing after aggregate captured payments meet the order total.
-- Leaves orders pending after failed payment attempts so retry remains possible.
-- Marks processing/completed orders refunded only after all linked captured funds are refunded.
-- Handles multiple payment records per order and ignores currency mismatches without rolling back the payment event.
-- Added manual synchronization API and regression coverage.
-- Preserved Checkout → Orders integration and corrected its fixtures for older Checkout model casts.
+### Configuration
+Inventory automation is disabled by default. Set `ITMOSOFT_INVENTORY_ORDERS_ENABLED=true` and configure `ITMOSOFT_INVENTORY_LOCATION_ID` before enabling it. See `docs/INVENTORY_ORDERS.md`.
+
+### Important limitations
+- Inventory quantities must be whole numbers.
+- Orders and Inventory must share the same default database connection.
+- No automatic reservation expiry, split shipments, backorders, or multi-warehouse allocation.
 
 ### Testing
-- Run the full PHPUnit suite locally.
-- Confirm every PHP/Laravel/dependency matrix job is green before publishing.
-- Static validation is not a substitute for PHPUnit or GitHub Actions.
+Run the complete PHPUnit suite against both lowest and stable dependency sets. Do not claim test success until both commands pass locally and GitHub Actions is green.
 
-## Packagist
+## Local Git commands
 
-If the package is already registered on Packagist, confirm its GitHub webhook updates the new tag. Otherwise submit `https://github.com/ITMOSOFT/laravel-commerce-adapters` as the package repository.
+Run these commands yourself after both dependency strategies pass:
+
+```bash
+git status
+git add .
+git commit -m "feat: add inventory to orders integration"
+git push origin main
+
+git tag -a v0.3.0 -m "Release v0.3.0"
+git push origin v0.3.0
+```
+
+Create the GitHub Release from tag `v0.3.0` using the title and release notes above. If Packagist is connected to the repository webhook, it should discover the tag automatically; otherwise trigger an update from the package page.

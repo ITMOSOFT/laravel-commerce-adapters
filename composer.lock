@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3d681cbc23b65eb2ab01026827111c54",
+    "content-hash": "9b430fe49bf502a0f80029c085f5a483",
     "packages": [
         {
             "name": "brick/math",
@@ -1113,6 +1113,58 @@
             ],
             "description": "A reusable Laravel checkout orchestration package with address snapshots, cart validation, shipping selection, and checkout state management. Supports Laravel 12 and 13.",
             "time": "2026-11-04T14:53:17+00:00"
+        },
+        {
+            "name": "itmosoft/laravel-inventory",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:ITMOSOFT/laravel-inventory.git",
+                "reference": "8d1c6857d9993eb0525f1c04b97b01241f473d03"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ITMOSOFT/laravel-inventory/zipball/8d1c6857d9993eb0525f1c04b97b01241f473d03",
+                "reference": "8d1c6857d9993eb0525f1c04b97b01241f473d03",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "^12.0 || ^13.0",
+                "illuminate/support": "^12.0 || ^13.0",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^10.0 || ^11.0",
+                "phpunit/phpunit": "^11.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "ItmoSoft\\Inventory\\InventoryServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "ItmoSoft\\Inventory\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "ItmoSoft\\Inventory\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "phpunit"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "A reusable Laravel inventory package for stock locations, stock levels, movements, and reservations.",
+            "time": "2026-11-04T11:43:28+00:00"
         },
         {
             "name": "itmosoft/laravel-orders",
@@ -9082,6 +9134,7 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "itmosoft/laravel-checkout": 20,
+        "itmosoft/laravel-inventory": 20,
         "itmosoft/laravel-payments": 20
     },
     "prefer-stable": true,

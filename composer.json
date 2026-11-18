@@ -4,14 +4,15 @@
     "type": "library",
     "license": "MIT",
     "require": {
-        "php": "^8.3",
         "illuminate/contracts": "^12.0 || ^13.0",
         "illuminate/database": "^12.0 || ^13.0",
         "illuminate/events": "^12.0 || ^13.0",
         "illuminate/support": "^12.0 || ^13.0",
         "itmosoft/laravel-checkout": "^1.0 || dev-main",
+        "itmosoft/laravel-inventory": "^1.0 || dev-main",
         "itmosoft/laravel-orders": "^1.0.2",
-        "itmosoft/laravel-payments": "^1.0 || dev-main"
+        "itmosoft/laravel-payments": "^1.0 || dev-main",
+        "php": "^8.3"
     },
     "require-dev": {
         "orchestra/testbench": "^10.0 || ^11.0",
@@ -41,6 +42,11 @@
         {
             "type": "vcs",
             "url": "https://github.com/ITMOSOFT/laravel-payments.git",
+            "canonical": false
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/ITMOSOFT/laravel-inventory.git",
             "canonical": false
         }
     ],

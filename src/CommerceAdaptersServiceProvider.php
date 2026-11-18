@@ -4,9 +4,12 @@ namespace ItmoSoft\CommerceAdapters;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use ItmoSoft\CommerceAdapters\Listeners\InventoryOrderEventListener;
 use ItmoSoft\CommerceAdapters\Listeners\PaymentOrderEventListener;
 use ItmoSoft\CommerceAdapters\Services\CheckoutOrderAdapter;
+use ItmoSoft\CommerceAdapters\Services\InventoryOrderAdapter;
 use ItmoSoft\CommerceAdapters\Services\PaymentOrderAdapter;
+use ItmoSoft\Orders\Events\OrderStatusChanged;
 use ItmoSoft\Payments\Events\PaymentCaptured;
 use ItmoSoft\Payments\Events\PaymentFailed;
 use ItmoSoft\Payments\Events\PaymentRefundUpdated;
@@ -22,6 +25,9 @@ class CommerceAdaptersServiceProvider extends ServiceProvider
 
         $this->app->singleton(PaymentOrderAdapter::class);
         $this->app->alias(PaymentOrderAdapter::class, 'itmosoft.commerce-adapters.payment-orders');
+
+        $this->app->singleton(InventoryOrderAdapter::class);
+        $this->app->alias(InventoryOrderAdapter::class, 'itmosoft.commerce-adapters.inventory-orders');
     }
 
     public function boot(): void
@@ -31,18 +37,13 @@ class CommerceAdaptersServiceProvider extends ServiceProvider
         ], 'itmosoft-commerce-adapters-config');
 
         if (config('itmosoft-commerce-adapters.payments_orders.enabled', true)) {
-            Event::listen(
-                PaymentCaptured::class,
-                PaymentOrderEventListener::class.'@handleCaptured'
-            );
-            Event::listen(
-                PaymentFailed::class,
-                PaymentOrderEventListener::class.'@handleFailed'
-            );
-            Event::listen(
-                PaymentRefundUpdated::class,
-                PaymentOrderEventListener::class.'@handleRefundUpdated'
-            );
+            Event::listen(PaymentCaptured::class, PaymentOrderEventListener::class.'@handleCaptured');
+            Event::listen(PaymentFailed::class, PaymentOrderEventListener::class.'@handleFailed');
+            Event::listen(PaymentRefundUpdated::class, PaymentOrderEventListener::class.'@handleRefundUpdated');
+        }
+
+        if (config('itmosoft-commerce-adapters.inventory_orders.enabled', false)) {
+            Event::listen(OrderStatusChanged::class, InventoryOrderEventListener::class.'@handle');
         }
     }
 }

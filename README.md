@@ -30,6 +30,16 @@ The default rules are deliberately conservative:
 
 `processing` means payment collection is complete; it does not mean fulfilment is complete.
 
+### Inventory → Orders (v0.3.0)
+
+`InventoryOrderAdapter` connects order status transitions to stock reservations:
+
+- `pending` → `processing`: reserve stock for each line with a product morph.
+- `processing` → `completed`: fulfil reservations and decrement on-hand stock.
+- Any transition to `cancelled`: release active reservations.
+
+This listener is opt-in. It is disabled by default and requires a configured stock location. Insufficient stock rolls back the order transition; if payment capture initiated that transition, the payment remains captured and the order remains pending, with a warning logged for reconciliation. See `docs/INVENTORY_ORDERS.md`.
+
 ## Requirements
 
 - PHP 8.3+
@@ -37,6 +47,7 @@ The default rules are deliberately conservative:
 - `itmosoft/laravel-checkout`
 - `itmosoft/laravel-orders` (v1.0.2 or later)
 - `itmosoft/laravel-payments`
+- `itmosoft/laravel-inventory`
 
 ## Installation
 
@@ -46,7 +57,7 @@ php artisan vendor:publish --tag=itmosoft-commerce-adapters-config
 php artisan migrate
 ```
 
-Ensure the Checkout, Orders and Payments migrations are installed and run. The integration does not create or modify their tables.
+Ensure the Checkout, Orders, Payments and Inventory migrations are installed and run. The adapters do not create or modify core package tables.
 
 ## Configuration
 
@@ -62,6 +73,10 @@ return [
         'process_on_full_capture' => true,
         'refund_on_full_refund' => true,
     ],
+    'inventory_orders' => [
+        'enabled' => false,
+        'location_id' => env('ITMOSOFT_INVENTORY_LOCATION_ID'),
+    ],
 ];
 ```
 
@@ -69,7 +84,7 @@ Set `ITMOSOFT_PAYMENTS_ORDERS_ENABLED=false` to disable automatic event listener
 
 ## Usage
 
-Automatic event handling is enabled by default when this package is installed.
+Payments → Orders event handling is enabled by default. Inventory → Orders is opt-in and requires a configured stock location.
 
 For explicit/manual synchronization:
 
@@ -92,7 +107,7 @@ if ($result->changed()) {
 
 ## Transaction and connection requirements
 
-- Payments and Orders must use the application's default database connection for automatic synchronization.
+- Payments, Orders and Inventory must use the application's default database connection for atomic automatic synchronization.
 - Payment capture/refund events are currently dispatched synchronously inside the Payments package's database transaction. The adapter runs its order update on the same connection so database changes participate in that transaction.
 - The Orders package dispatches `OrderStatusChanged` synchronously. External side effects in listeners should be deferred until after commit.
 - SQLite tests verify behavior, not production row-lock concurrency. Validate the workflow against the production database engine before relying on concurrency guarantees.
@@ -105,7 +120,7 @@ composer update --no-interaction --prefer-dist
 composer test
 ```
 
-The test suite includes Checkout → Orders and Payments → Orders integration tests. CI tests PHP 8.3/8.4 with Laravel 12/13 and lowest/stable dependency strategies.
+The test suite includes Checkout → Orders, Payments → Orders and Inventory → Orders integration tests. CI tests PHP 8.3/8.4 with Laravel 12/13 and lowest/stable dependency strategies.
 
 ## Scope and known limitations
 
@@ -118,3 +133,9 @@ The test suite includes Checkout → Orders and Payments → Orders integration 
 - The adapter does not change either core package's schema or introduce a foreign key between payments and orders.
 
 This package is an optional integration layer. Core packages remain independently usable.
+
+## Inventory → Orders integration (v0.3.0)
+
+The optional Inventory adapter reserves stock when an order enters `processing`, releases active reservations when it is cancelled, and fulfils reservations when it becomes `completed`. It uses the Inventory package's public `InventoryManager` API and deterministic per-order-line references to prevent duplicate reservations.
+
+The integration is disabled by default. Publish the config and set `ITMOSOFT_INVENTORY_ORDERS_ENABLED=true` plus `ITMOSOFT_INVENTORY_LOCATION_ID=<location id>` before enabling it. Order or item metadata may override the default location with `inventory_location_id`. Fractional quantities are rejected because the Inventory package currently uses integer stock units. See [Inventory → Orders integration](docs/INVENTORY_ORDERS.md) for lifecycle and failure behavior.

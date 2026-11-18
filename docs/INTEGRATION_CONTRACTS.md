@@ -42,3 +42,31 @@ Payments currently dispatches capture/refund events synchronously from inside it
 ## Checkout → Orders
 
 See `CheckoutOrderAdapter` and README for checkout snapshot mapping, metadata-based idempotency and same-connection transaction requirements.
+
+## Inventory → Orders
+
+### Source of truth
+
+- Inventory owns stock levels, reservations and stock movements.
+- Orders owns order state and order status history.
+- The adapter uses `InventoryManager::reserve()`, `release()` and `fulfill()`; it does not write directly to Inventory tables.
+
+### Lifecycle
+
+- `pending` → `processing`: reserve each stock-tracked order line.
+- `processing` → `completed`: fulfil each active reservation, decrementing both on-hand and reserved stock.
+- Any transition to `cancelled`: release active reservations.
+
+A line is stock-tracked when both `product_type` and `product_id` are present. The product is resolved through the order item's polymorphic `product` relation. Lines without a product morph are treated as non-stock lines. Quantities must be positive whole numbers because Inventory currently models integer units.
+
+### Idempotency and failure behavior
+
+- Each reservation reference is deterministic: `itmosoft-order:{order_id}:item:{order_item_id}`.
+- The adapter locks the order and stock row, then rechecks the reservation before creating one.
+- Repeated processing events do not create duplicate reservations. Repeated completion/cancellation events do not repeat a fulfilled/released action.
+- Insufficient stock rolls back the order status transition.
+- If payment capture triggered processing, the inventory exception is caught after the nested order transaction rolls back. The captured payment remains persisted and the order remains pending.
+- Completion is blocked when a stock-tracked line has no reservation.
+- Orders and Inventory must share the same default database connection.
+
+The integration is opt-in and disabled by default. Configure a default location ID or provide `inventory_location_id` in order/item metadata. Item metadata overrides order metadata, which overrides the configured default.

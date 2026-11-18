@@ -3,7 +3,9 @@
 namespace ItmoSoft\CommerceAdapters\Services;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use ItmoSoft\CommerceAdapters\DTOs\PaymentOrderSyncResult;
+use ItmoSoft\CommerceAdapters\Exceptions\InventoryOrderSyncException;
 use ItmoSoft\Orders\Models\Order;
 use ItmoSoft\Orders\Services\OrderService;
 use ItmoSoft\Payments\Models\Payment;
@@ -111,11 +113,28 @@ class PaymentOrderAdapter
 
             if ($trigger === 'capture' && config('itmosoft-commerce-adapters.payments_orders.process_on_full_capture', true)) {
                 if ($order->status === 'pending' && $orderTotal > 0 && $capturedTotal >= $orderTotal) {
-                    $updated = $this->orders->changeStatus(
-                        $order,
-                        'processing',
-                        'Payment capture total meets the order grand total.'
-                    );
+                    try {
+                        $updated = $this->orders->changeStatus(
+                            $order,
+                            'processing',
+                            'Payment capture total meets the order grand total.'
+                        );
+                    } catch (InventoryOrderSyncException $exception) {
+                        // The nested order transition is rolled back, but the
+                        // gateway-confirmed payment remains in the outer payment
+                        // transaction for manual stock reconciliation.
+                        Log::warning('Payment captured but inventory blocked order processing.', [
+                            'order_id' => $order->getKey(),
+                            'payment_id' => $payment->getKey(),
+                            'reason' => $exception->getMessage(),
+                        ]);
+
+                        return new PaymentOrderSyncResult(
+                            'unchanged',
+                            $order->fresh(),
+                            'Payment captured, but inventory reservation blocked order processing: '.$exception->getMessage(),
+                        );
+                    }
 
                     return new PaymentOrderSyncResult('order_processing', $updated);
                 }

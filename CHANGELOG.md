@@ -1,23 +1,30 @@
 # Changelog
 
+## [0.3.0] - 2026-11-18
+
+### Added
+- Inventory → Orders adapter using the Inventory package's public reservation APIs.
+- Automatic reservation on `pending` → `processing`, release on cancellation, and fulfilment on `processing` → `completed`.
+- Deterministic order-line reservation references and idempotent repeated event handling.
+- Configurable default inventory location with order/item metadata overrides.
+- Explicit handling for insufficient stock, missing reservations, unresolved products, and fractional inventory quantities.
+- Inventory integration feature tests, including payment-capture preservation when stock is insufficient.
+
+### Changed
+- Added `itmosoft/laravel-inventory` as a package dependency.
+- Inventory event integration is opt-in and disabled by default.
+- Payment → Orders integration now preserves a captured payment when an inventory reservation prevents the order from entering processing.
+
 ## [0.2.0] - 2026-11-18
 
 ### Added
-- Added optional Payments → Orders lifecycle adapter.
-- Added automatic listeners for payment capture, failure and refund updates.
-- Added aggregate capture/refund reconciliation across multiple payment records linked to an order.
-- Added conservative order transitions: pending → processing after full collection; processing/completed → refunded after full refund.
-- Added manual synchronization API and structured result DTO.
-- Added eleven Payments → Orders integration tests, including a regression check that an unused failed attempt in another currency does not block a valid capture.
+- Payments → Orders integration for capture and refund lifecycle events.
+- Aggregate captured/refunded amount reconciliation and idempotent order status transitions.
+- Currency mismatch protection and retry-friendly failed payment handling.
+- Checkout fixture compatibility with older JSON-backed model attributes.
 
-### Preserved
-- Existing Checkout → Orders adapter and its regression tests.
+## [0.1.2] - 2026-11-18
 
-### Fixed
-- Decode JSON-backed Checkout metadata and shipping details when using older Checkout model versions that do not define array casts. This preserves incoming metadata and makes repeated conversion idempotency work across the supported dependency range.
-- Made Checkout integration test fixtures explicitly JSON-encode `shipping_details` and `metadata` for compatibility with the minimum supported Checkout model casts.
-
-### Notes
-- Failed payment attempts intentionally do not cancel orders.
-- Partial refunds intentionally do not change order status.
-- Amount comparisons follow the current Payments package's two-decimal amount contract.
+### Added
+- Checkout → Orders integration adapter.
+- Optional customer morph mapping and checkout metadata idempotency link.

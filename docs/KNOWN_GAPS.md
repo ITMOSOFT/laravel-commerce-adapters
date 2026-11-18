@@ -10,3 +10,7 @@
 8. Event timing: existing package events are synchronous. External listeners should defer side effects until after commit.
 9. Concurrency: SQLite tests do not prove production row-lock behavior. Test with the target database engine.
 10. No payment allocation across multiple orders or one payment shared by several orders.
+11. Inventory quantities are integer-only. Fractional units and unit-of-measure conversion are rejected/not implemented.
+12. Inventory allocation currently uses one location per order line (with metadata override). Split warehouse allocation, backorders, partial shipments and reservation expiry automation are not included.
+13. Inventory listener is opt-in. Applications must configure a stock location before enabling it.
+14. SQLite tests do not prove production row-lock behavior for inventory reservation concurrency; test with the production database engine.
