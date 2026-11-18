@@ -1,0 +1,37 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4']
+        dependency-version: ['prefer-lowest', 'prefer-stable']
+        laravel: ['12', '13']
+        exclude:
+          - php: '8.3'
+            laravel: '13'
+          - php: '8.4'
+            laravel: '12'
+    name: PHP ${{ matrix.php }} / Laravel ${{ matrix.laravel }} / ${{ matrix.dependency-version }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, sqlite3, pdo_sqlite
+          coverage: none
+      - uses: ramsey/composer-install@v3
+        with:
+          composer-options: --prefer-dist --no-interaction
+      - name: Resolve dependency matrix
+        run: composer update --no-interaction --prefer-dist --${{ matrix.dependency-version }}
+      - name: Run PHPUnit
+        run: composer test
