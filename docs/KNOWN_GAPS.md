@@ -19,3 +19,7 @@
 16. Cart repricing: no automatic repricing of existing cart lines when scheduled prices change because Cart currently exposes no public API to update a line's price and snapshot independently of quantity.
 17. Cart pricing context must be assembled from trusted server-side data; this package does not authenticate customer-group or regional context.
 18. Cart/Pricing integration requires the Cart, priceable and Pricing models to use the application's default database connection.
+
+19. Cart → Inventory checks are advisory and do not reserve stock. Multiple carts may pass against the same unreserved quantity; authoritative reservation and failure handling occur during order processing.
+20. Cart → Inventory supports integer stock quantities only. Unit-of-measure conversion, fractional stock, split-location allocation, and automatic cart cleanup are not implemented.
+21. Cart → Inventory checks one selected location per call. It does not aggregate availability across warehouses or automatically select a fulfilment location.

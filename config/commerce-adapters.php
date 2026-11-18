@@ -12,6 +12,11 @@ return [
         'refund_on_full_refund' => true,
     ],
 
+    'cart_inventory' => [
+        // Advisory availability checks only; carts do not reserve stock.
+        'location_id' => env('ITMOSOFT_CART_INVENTORY_LOCATION_ID'),
+    ],
+
     'inventory_orders' => [
         /*
          * Opt in after configuring a default stock location. Inventory

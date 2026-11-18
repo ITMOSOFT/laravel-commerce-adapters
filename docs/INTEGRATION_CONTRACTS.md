@@ -99,3 +99,24 @@ Context must be trusted server-side data (for example, a verified customer group
 ### Connection requirement
 
 Cart, the priceable model and the configured Pricing model must use the application's default database connection.
+
+
+## Cart → Inventory
+
+### Source of truth
+
+- Cart owns cart lines and requested quantities.
+- Inventory owns on-hand quantities, reservations and stock movements.
+- The adapter reads availability through `InventoryManager::stockFor()` and delegates cart mutations to `CartManager::add()` / `setQuantity()`. It does not write directly to either package's tables.
+
+### Availability contract
+
+- The adapter checks the sum of quantities across every line for the same product morph in the cart, including distinct option combinations.
+- Adding a line checks current cart demand plus the incoming quantity. Updating a line checks all other lines for that product plus the proposed replacement quantity.
+- The selected stock location must exist and be active. A default may be configured using `cart_inventory.location_id`; a location model or ID may be supplied per call.
+- Cart, product, location and Inventory stock must share the application's default database connection.
+- Inventory units are integers. Quantity values below one are rejected.
+
+### No reservation guarantee
+
+This adapter does not create, modify or release stock reservations. Cart contents are provisional and can be abandoned. Consequently, availability checks are advisory: separate carts can each pass against the same unreserved units, and stock can change before order processing. Inventory → Orders remains responsible for reserving stock when an order enters `processing`; the application must handle a reservation failure at that stage.

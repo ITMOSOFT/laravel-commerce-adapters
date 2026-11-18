@@ -62,6 +62,34 @@ The adapter stores the Pricing record ID, original four-decimal amount, rounded 
 
 This integration is invoked explicitly through the adapter; it does not automatically reprice existing cart lines when a price schedule changes. The Cart package currently has no public operation for replacing a line's price and snapshot without changing quantity.
 
+### Cart → Inventory (v0.5.0)
+
+`CartInventoryAdapter` checks the cart's total demand for a product against available stock at a selected active Inventory location before adding a line or changing its quantity. It counts all lines for the same product, including lines with different options, and delegates all cart writes to `CartManager`.
+
+```php
+use ItmoSoft\CommerceAdapters\Services\CartInventoryAdapter;
+use ItmoSoft\Cart\Models\Cart;
+
+$cart = Cart::query()->findOrFail($cartId);
+$line = app(CartInventoryAdapter::class)->addAvailableItem(
+    cart: $cart,
+    item: $product,
+    quantity: 2,
+    options: ['size' => 'M'],
+    unitPrice: '19.99',
+);
+
+// Change quantity with the same stock check:
+$line = app(CartInventoryAdapter::class)->setAvailableQuantity($line, 3);
+
+// Or check availability before composing with Cart → Pricing:
+app(CartInventoryAdapter::class)->assertAvailableForCart($cart, $product, 2);
+```
+
+Configure `ITMOSOFT_CART_INVENTORY_LOCATION_ID` or pass a `StockLocation` / location ID to each call. Inactive or missing locations are rejected. Inventory quantities are integers; fractional cart quantities are not supported by this adapter.
+
+**Important:** this is an availability check, not a stock reservation. Adding an item to a cart does not change `quantity_reserved`; abandoned carts therefore do not hold stock. Two different carts can both pass an availability check for the same remaining units. The authoritative reservation still happens in Inventory → Orders when an order enters `processing`. Treat cart availability as advisory and handle reservation failure at order processing.
+
 ## Requirements
 
 - PHP 8.3+
@@ -100,6 +128,9 @@ return [
     'inventory_orders' => [
         'enabled' => false,
         'location_id' => env('ITMOSOFT_INVENTORY_LOCATION_ID'),
+    ],
+    'cart_inventory' => [
+        'location_id' => env('ITMOSOFT_CART_INVENTORY_LOCATION_ID'),
     ],
 ];
 ```
@@ -144,7 +175,7 @@ composer update --no-interaction --prefer-dist
 composer test
 ```
 
-The test suite includes Checkout → Orders, Payments → Orders, Inventory → Orders and Cart → Pricing integration tests. CI tests PHP 8.3/8.4 with Laravel 12/13 and lowest/stable dependency strategies.
+The test suite includes Checkout → Orders, Payments → Orders, Inventory → Orders, Cart → Pricing and Cart → Inventory integration tests. CI tests PHP 8.3/8.4 with Laravel 12/13 and lowest/stable dependency strategies.
 
 ## Scope and known limitations
 
@@ -170,3 +201,10 @@ The integration is disabled by default. Publish the config and set `ITMOSOFT_INV
 Use `app(CartPricingAdapter::class)->addPricedItem($cart, $product, $quantity, $options, $context)` instead of calling `CartManager::add()` with a client-provided or stale price. The adapter resolves the applicable `Price` using the cart currency and resulting line quantity, then delegates persistence to `CartManager`. If no price applies, it throws `CartPricingException` and does not add the line. The Cart and Pricing models must use the application's default database connection.
 
 **Money precision limitation:** Pricing stores four decimal places, while Cart currently stores two. The adapter uses half-up rounding to two decimal places for the cart amount and retains the original amount in `price_snapshot`. This is not currency-exponent-aware money arithmetic; applications handling zero- or three-decimal currencies should account for the Cart package's current two-decimal schema before using this integration.
+
+
+## Cart → Inventory integration (v0.5.0)
+
+The Cart → Inventory adapter checks stock before cart additions and quantity changes. It calculates demand across all cart lines for the same product, not only matching option hashes. Use `addAvailableItem()` for a checked addition, `setAvailableQuantity()` for a checked quantity change, `availableQuantity()` for a location-level read, or `assertAvailableForCart()` when composing the check with Cart → Pricing.
+
+This adapter deliberately does not reserve inventory. Cart contents are not commitments, and the existing Inventory package has no cart-reservation lifecycle. Stock is reserved by Inventory → Orders at order processing. Availability can change between the cart check and order reservation; applications must handle an insufficient-stock result during order processing. All participating models must use the application's default database connection. See [Cart → Inventory integration](docs/CART_INVENTORY.md).

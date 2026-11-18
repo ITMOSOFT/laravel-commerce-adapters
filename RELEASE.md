@@ -1,9 +1,11 @@
-# Release v0.4.0
+# Release v0.5.0
 
 ## Summary
-Adds the Cart → Pricing adapter while retaining Checkout → Orders, Payments → Orders and Inventory → Orders.
+Adds Cart → Inventory availability checks while retaining Checkout → Orders, Payments → Orders, Inventory → Orders and Cart → Pricing.
 
 ## Before release
+
+Run both dependency strategies and verify the full suite:
 
 ```bash
 composer update --no-interaction --prefer-dist --prefer-lowest
@@ -13,50 +15,55 @@ composer test
 composer validate --no-check-publish
 ```
 
+Do not tag or publish until both local test runs pass and GitHub Actions is green.
+
+## GitHub repository
+
+- **Repository:** `ITMOSOFT/laravel-commerce-adapters`
+- **Composer package:** `itmosoft/laravel-commerce-adapters`
+- **Description:** `Optional integration adapters connecting independent ITMOSOFT Laravel commerce packages.`
+
 ## GitHub release
 
-**Tag:** `v0.4.0`
+- **Tag:** `v0.5.0`
+- **Title:** `v0.5.0 – Cart to Inventory Availability Integration`
 
-**Title:** `v0.4.0 – Cart to Pricing Integration`
+### Release notes
 
-## Release notes
+#### What's new
+- Check stock availability before adding a product to a cart.
+- Validate cart line quantity changes against stock availability.
+- Count total cart demand for a product across different option lines.
+- Support a configured default stock location or an explicit location per call.
+- Reject missing and inactive locations, and enforce a shared default database connection.
 
-### What's new
-- Resolve applicable prices through `PriceResolver` before adding cart lines.
-- Respect cart currency, quantity breaks, active schedules and trusted context-specific pricing.
-- Resolve quantity breaks against the resulting merged cart-line quantity.
-- Persist price provenance in the Cart package's existing `price_snapshot` field.
-- Delegate all cart writes to the Cart package's public `CartManager` API.
+#### Important behavior
+- Cart additions do not reserve inventory. Cart contents remain provisional and abandoned carts do not hold stock.
+- Availability checks are advisory; multiple carts can pass against the same unreserved stock.
+- Inventory → Orders remains responsible for authoritative reservations when an order enters `processing`.
+- Integer stock quantities only; fractional quantities, multi-warehouse allocation and unit conversion are out of scope.
 
-### Compatibility
+#### Compatibility
 - PHP 8.3+
 - Laravel 12 and 13
-- `itmosoft/laravel-cart`
-- `itmosoft/laravel-pricing`
-- Existing Checkout, Orders, Payments and Inventory dependencies.
+- `itmosoft/laravel-cart` and `itmosoft/laravel-inventory`
+- Existing Checkout, Orders, Payments and Pricing dependencies.
 
-### Important limitations
-- Cart stores money at two decimal places; Pricing stores four. The adapter rounds half-up to two decimals and retains the original amount in the snapshot.
-- No FX conversion or currency-exponent-aware money arithmetic is performed.
-- Existing cart lines are not automatically repriced when schedules change; the Cart package currently has no public price-update operation independent of quantity.
-- Pricing context must be supplied from trusted server-side values.
-- Cart, item and Pricing models must use the default database connection.
-
-### Testing
-Run both lowest and stable dependency strategies and ensure GitHub Actions is green. Do not claim test success until the commands pass locally.
+#### Testing
+Run both lowest and stable dependency strategies and confirm GitHub Actions is green. The ZIP's static checks are not a substitute for PHPUnit.
 
 ## Local Git commands
 
-Run these commands yourself after tests pass:
+Run these yourself after tests pass:
 
 ```bash
 git status
 git add .
-git commit -m "feat: add cart to pricing integration"
+git commit -m "feat: add cart to inventory availability integration"
 git push origin main
 
-git tag -a v0.4.0 -m "Release v0.4.0"
-git push origin v0.4.0
+git tag -a v0.5.0 -m "Release v0.5.0"
+git push origin v0.5.0
 ```
 
-Create the GitHub Release from tag `v0.4.0` using the title and release notes above. If Packagist is connected to the repository webhook, it should discover the tag automatically; otherwise trigger an update from the package page.
+Create the GitHub Release from tag `v0.5.0` using the title and notes above. If Packagist is connected to the repository webhook, it should discover the tag automatically; otherwise trigger an update from the package page.

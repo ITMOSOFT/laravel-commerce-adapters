@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.0] - 2026-11-18
+
+### Added
+- Cart → Inventory adapter for stock availability checks before adding cart items or changing line quantities.
+- Aggregate demand checks across all cart lines for the same product, including lines with different options.
+- Configurable default Inventory location and explicit per-call location selection.
+- Active-location validation and default-connection enforcement.
+- Cart/Inventory integration tests covering available stock, insufficient stock, aggregate demand, quantity changes and non-reserving behavior.
+
+### Changed
+- Documented that cart availability is advisory and does not reserve stock; authoritative reservation remains in Inventory → Orders.
+
+
 ## [0.4.0] - 2026-11-18
 
 ### Added
