@@ -62,6 +62,20 @@ The adapter stores the Pricing record ID, original four-decimal amount, rounded 
 
 This integration is invoked explicitly through the adapter; it does not automatically reprice existing cart lines when a price schedule changes. The Cart package currently has no public operation for replacing a line's price and snapshot without changing quantity.
 
+### Checkout → Shipping (v0.6.0)
+
+`CheckoutShippingAdapter` calculates shipping options for a pending checkout using `ShippingQuoteService`, then revalidates the selected quote against current rates before persisting it through the Checkout manager when the installed Checkout model supports its totals contract, with a compatible session-level fallback for published Checkout releases missing that model method. It uses the checkout shipping destination, subtotal, currency, and an application-supplied packed shipment weight. The selected quote snapshot is stored in `shipping_details` and carried into order metadata by `CheckoutOrderAdapter`.
+
+```php
+use ItmoSoft\CommerceAdapters\Services\CheckoutShippingAdapter;
+
+$adapter = app(CheckoutShippingAdapter::class);
+$quotes = $adapter->quoteForCheckout($checkoutSession, weight: 2.5);
+$checkoutSession = $adapter->selectQuote($checkoutSession, $quotes[0], weight: 2.5);
+```
+
+The adapter rejects stale or client-modified quote amounts and only operates on pending checkout sessions. It does not create shipments or contact carriers. Pass the actual packed weight when using weight-based rates. See [Checkout → Shipping integration](docs/CHECKOUT_SHIPPING.md).
+
 ### Cart → Inventory (v0.5.0)
 
 `CartInventoryAdapter` checks the cart's total demand for a product against available stock at a selected active Inventory location before adding a line or changing its quantity. It counts all lines for the same product, including lines with different options, and delegates all cart writes to `CartManager`.
@@ -100,6 +114,7 @@ Configure `ITMOSOFT_CART_INVENTORY_LOCATION_ID` or pass a `StockLocation` / loca
 - `itmosoft/laravel-inventory`
 - `itmosoft/laravel-cart`
 - `itmosoft/laravel-pricing`
+- `itmosoft/laravel-shipping`
 
 ## Installation
 
@@ -109,7 +124,7 @@ php artisan vendor:publish --tag=itmosoft-commerce-adapters-config
 php artisan migrate
 ```
 
-Ensure the Checkout, Orders, Payments, Inventory, Cart and Pricing migrations are installed and run. The adapters do not create or modify core package tables.
+Ensure the Checkout, Orders, Payments, Inventory, Cart, Pricing and Shipping migrations are installed and run. The adapters do not create or modify core package tables.
 
 ## Configuration
 
@@ -119,6 +134,9 @@ return [
     'checkout_orders' => [
         'customer_type' => 'user',
         'metadata_key' => 'itmosoft_commerce_adapters',
+    ],
+    'checkout_shipping' => [
+        'default_weight' => env('ITMOSOFT_CHECKOUT_SHIPPING_DEFAULT_WEIGHT', 0),
     ],
     'payments_orders' => [
         'enabled' => true,
@@ -175,7 +193,7 @@ composer update --no-interaction --prefer-dist
 composer test
 ```
 
-The test suite includes Checkout → Orders, Payments → Orders, Inventory → Orders, Cart → Pricing and Cart → Inventory integration tests. CI tests PHP 8.3/8.4 with Laravel 12/13 and lowest/stable dependency strategies.
+The test suite includes Checkout → Orders, Checkout → Shipping, Payments → Orders, Inventory → Orders, Cart → Pricing and Cart → Inventory integration tests. CI tests PHP 8.3/8.4 with Laravel 12/13 and lowest/stable dependency strategies.
 
 ## Scope and known limitations
 

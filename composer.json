@@ -14,7 +14,8 @@
         "itmosoft/laravel-orders": "^1.0.2",
         "itmosoft/laravel-payments": "^1.0 || dev-main",
         "itmosoft/laravel-pricing": "^1.0 || dev-main",
-        "php": "^8.3"
+        "php": "^8.3",
+        "itmosoft/laravel-shipping": "^1.0 || dev-main"
     },
     "require-dev": {
         "orchestra/testbench": "^10.0 || ^11.0",
@@ -59,6 +60,11 @@
         {
             "type": "vcs",
             "url": "https://github.com/ITMOSOFT/laravel-pricing.git",
+            "canonical": false
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/ITMOSOFT/laravel-shipping.git",
             "canonical": false
         }
     ],

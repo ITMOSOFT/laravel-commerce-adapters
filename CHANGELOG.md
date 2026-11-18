@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.6.0] - 2026-11-18
+
+### Added
+- Checkout → Shipping quote integration through `CheckoutShippingAdapter`.
+- Added a compatibility fallback for published Checkout versions whose `CheckoutManager::selectShipping()` calls a missing `CheckoutSession::recalculateGrandTotal()` method.
+- Fresh quote revalidation before selection to reject stale or client-modified amounts.
+- Shipping quote snapshot persistence in Checkout `shipping_details` for downstream order metadata.
+- Integration tests for destination matching, quote selection, stale quotes, invalid addresses, completed sessions, and weight validation.
+- Shipping package dependency and Testbench provider registration.
+
+### Notes
+- The adapter requires Checkout and Shipping to use the default database connection.
+- Packed shipment weight is supplied by the application; it is not inferred from cart snapshots.
+- Shipment creation, carrier booking, labels, delivery estimates, and inventory reservations remain out of scope.
+
+
 ## [0.5.0] - 2026-11-18
 
 ### Added

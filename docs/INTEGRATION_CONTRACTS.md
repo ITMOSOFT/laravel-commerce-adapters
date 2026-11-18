@@ -120,3 +120,7 @@ Cart, the priceable model and the configured Pricing model must use the applicat
 ### No reservation guarantee
 
 This adapter does not create, modify or release stock reservations. Cart contents are provisional and can be abandoned. Consequently, availability checks are advisory: separate carts can each pass against the same unreserved units, and stock can change before order processing. Inventory → Orders remains responsible for reserving stock when an order enters `processing`; the application must handle a reservation failure at that stage.
+
+## Shipping quote boundary
+
+- Checkout → Shipping: adapter recalculates the quote at selection time and persists the shipping snapshot and totals through the Checkout manager or a compatibility fallback for Checkout releases missing the session totals method; it does not create shipments or call carriers.

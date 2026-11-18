@@ -6,6 +6,11 @@ return [
         'metadata_key' => 'itmosoft_commerce_adapters',
     ],
 
+    'checkout_shipping' => [
+        // Shipping quotes are resolved on demand and revalidated when selected.
+        'default_weight' => env('ITMOSOFT_CHECKOUT_SHIPPING_DEFAULT_WEIGHT', 0),
+    ],
+
     'payments_orders' => [
         'enabled' => env('ITMOSOFT_PAYMENTS_ORDERS_ENABLED', true),
         'process_on_full_capture' => true,

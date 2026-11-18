@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b83f8e7747eedc383f15c623ee7ef515",
+    "content-hash": "0902879a4ea8be97983730a5cf48ef4b",
     "packages": [
         {
             "name": "brick/math",
@@ -1383,6 +1383,67 @@
             ],
             "description": "A reusable Laravel pricing package with polymorphic prices, currency support, scheduled pricing, quantity breaks, and contextual price resolution.",
             "time": "2026-11-04T11:51:22+00:00"
+        },
+        {
+            "name": "itmosoft/laravel-shipping",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:ITMOSOFT/laravel-shipping.git",
+                "reference": "1c1c814f26a2fe2d0b457f4e1c918a6494ac04a4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ITMOSOFT/laravel-shipping/zipball/1c1c814f26a2fe2d0b457f4e1c918a6494ac04a4",
+                "reference": "1c1c814f26a2fe2d0b457f4e1c918a6494ac04a4",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^12.0|^13.0",
+                "illuminate/database": "^12.0|^13.0",
+                "illuminate/support": "^12.0|^13.0",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^10.0|^11.0",
+                "phpunit/phpunit": "^11.0|^12.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "ItmoSoft\\Shipping\\ShippingServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "ItmoSoft\\Shipping\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "ItmoSoft\\Shipping\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "phpunit"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Shipping zones, methods, rates, quotes, shipments and tracking for Laravel applications.",
+            "keywords": [
+                "delivery",
+                "ecommerce",
+                "laravel",
+                "rates",
+                "shipping",
+                "tracking"
+            ],
+            "time": "2026-11-05T06:13:17+00:00"
         },
         {
             "name": "laravel/framework",
@@ -9242,7 +9303,8 @@
         "itmosoft/laravel-checkout": 20,
         "itmosoft/laravel-inventory": 20,
         "itmosoft/laravel-payments": 20,
-        "itmosoft/laravel-pricing": 20
+        "itmosoft/laravel-pricing": 20,
+        "itmosoft/laravel-shipping": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

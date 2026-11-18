@@ -1,11 +1,11 @@
-# Release v0.5.0
+# Release v0.6.0
 
 ## Summary
-Adds Cart → Inventory availability checks while retaining Checkout → Orders, Payments → Orders, Inventory → Orders and Cart → Pricing.
+Adds Checkout → Shipping quote integration, including compatibility with Checkout releases missing the session grand-total method, while retaining Checkout → Orders, Payments → Orders, Inventory → Orders, Cart → Pricing and Cart → Inventory.
 
 ## Before release
 
-Run both dependency strategies and verify the full suite:
+Run both dependency strategies and verify the complete suite:
 
 ```bash
 composer update --no-interaction --prefer-dist --prefer-lowest
@@ -25,32 +25,35 @@ Do not tag or publish until both local test runs pass and GitHub Actions is gree
 
 ## GitHub release
 
-- **Tag:** `v0.5.0`
-- **Title:** `v0.5.0 – Cart to Inventory Availability Integration`
+- **Tag:** `v0.6.0`
+- **Title:** `v0.6.0 – Checkout to Shipping Quote Integration`
 
 ### Release notes
 
 #### What's new
-- Check stock availability before adding a product to a cart.
-- Validate cart line quantity changes against stock availability.
-- Count total cart demand for a product across different option lines.
-- Support a configured default stock location or an explicit location per call.
-- Reject missing and inactive locations, and enforce a shared default database connection.
+- Generate shipping quotes for pending Checkout sessions using the Shipping package.
+- Use the checkout shipping destination, subtotal, currency and supplied packed weight.
+- Recalculate quotes during selection and reject stale or client-modified amounts.
+- Persist the selected method and quote snapshot in Checkout `shipping_details`.
+- Preserve quote details when `CheckoutOrderAdapter` converts the checkout into an order.
 
 #### Important behavior
-- Cart additions do not reserve inventory. Cart contents remain provisional and abandoned carts do not hold stock.
-- Availability checks are advisory; multiple carts can pass against the same unreserved stock.
-- Inventory → Orders remains responsible for authoritative reservations when an order enters `processing`.
-- Integer stock quantities only; fractional quantities, multi-warehouse allocation and unit conversion are out of scope.
+- Only pending checkout sessions can be quoted or updated.
+- A shipping country and valid subtotal are required.
+- Pass actual packed weight when using weight-based rates; the adapter does not infer weight from cart snapshots.
+- Quote amounts follow the Shipping package's existing float/two-decimal contract.
+- The adapter does not create shipments, labels, carrier bookings, delivery estimates, taxes, or inventory reservations.
+- Checkout and Shipping must use the application's default database connection.
 
 #### Compatibility
 - PHP 8.3+
 - Laravel 12 and 13
-- `itmosoft/laravel-cart` and `itmosoft/laravel-inventory`
-- Existing Checkout, Orders, Payments and Pricing dependencies.
+- `itmosoft/laravel-checkout`
+- `itmosoft/laravel-shipping`
+- Existing Cart, Orders, Payments, Inventory and Pricing dependencies.
 
 #### Testing
-Run both lowest and stable dependency strategies and confirm GitHub Actions is green. The ZIP's static checks are not a substitute for PHPUnit.
+Run both lowest and stable dependency strategies and confirm GitHub Actions is green. Static ZIP validation is not a substitute for PHPUnit.
 
 ## Local Git commands
 
@@ -59,11 +62,11 @@ Run these yourself after tests pass:
 ```bash
 git status
 git add .
-git commit -m "feat: add cart to inventory availability integration"
+git commit -m "feat: add checkout to shipping quote integration"
 git push origin main
 
-git tag -a v0.5.0 -m "Release v0.5.0"
-git push origin v0.5.0
+git tag -a v0.6.0 -m "Release v0.6.0"
+git push origin v0.6.0
 ```
 
-Create the GitHub Release from tag `v0.5.0` using the title and notes above. If Packagist is connected to the repository webhook, it should discover the tag automatically; otherwise trigger an update from the package page.
+Create the GitHub Release from tag `v0.6.0` using the title and notes above. If Packagist is connected to the repository webhook, it should discover the tag automatically; otherwise trigger an update from the package page.

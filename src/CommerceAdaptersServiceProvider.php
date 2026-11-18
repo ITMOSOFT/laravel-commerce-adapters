@@ -8,6 +8,7 @@ use ItmoSoft\CommerceAdapters\Listeners\InventoryOrderEventListener;
 use ItmoSoft\CommerceAdapters\Listeners\PaymentOrderEventListener;
 use ItmoSoft\CommerceAdapters\Services\CartPricingAdapter;
 use ItmoSoft\CommerceAdapters\Services\CartInventoryAdapter;
+use ItmoSoft\CommerceAdapters\Services\CheckoutShippingAdapter;
 use ItmoSoft\CommerceAdapters\Services\CheckoutOrderAdapter;
 use ItmoSoft\CommerceAdapters\Services\InventoryOrderAdapter;
 use ItmoSoft\CommerceAdapters\Services\PaymentOrderAdapter;
@@ -27,6 +28,9 @@ class CommerceAdaptersServiceProvider extends ServiceProvider
 
         $this->app->singleton(CartInventoryAdapter::class);
         $this->app->alias(CartInventoryAdapter::class, 'itmosoft.commerce-adapters.cart-inventory');
+
+        $this->app->singleton(CheckoutShippingAdapter::class);
+        $this->app->alias(CheckoutShippingAdapter::class, 'itmosoft.commerce-adapters.checkout-shipping');
 
         $this->app->singleton(CheckoutOrderAdapter::class);
         $this->app->alias(CheckoutOrderAdapter::class, 'itmosoft.commerce-adapters.checkout-orders');

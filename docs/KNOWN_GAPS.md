@@ -23,3 +23,7 @@
 19. Cart → Inventory checks are advisory and do not reserve stock. Multiple carts may pass against the same unreserved quantity; authoritative reservation and failure handling occur during order processing.
 20. Cart → Inventory supports integer stock quantities only. Unit-of-measure conversion, fractional stock, split-location allocation, and automatic cart cleanup are not implemented.
 21. Cart → Inventory checks one selected location per call. It does not aggregate availability across warehouses or automatically select a fulfilment location.
+
+## Checkout and shipping
+
+- Checkout → Shipping: quote selection revalidates current method, rate type, currency and amount, but package weight must be supplied by the application and a selected quote can still change before order/payment finalization.
