@@ -40,6 +40,28 @@ The default rules are deliberately conservative:
 
 This listener is opt-in. It is disabled by default and requires a configured stock location. Insufficient stock rolls back the order transition; if payment capture initiated that transition, the payment remains captured and the order remains pending, with a warning logged for reconciliation. See `docs/INVENTORY_ORDERS.md`.
 
+### Cart → Pricing (v0.4.0)
+
+`CartPricingAdapter` resolves a price through `PriceResolver` before adding a cart line through `CartManager`. It supports currency matching, quantity breaks, scheduled prices, and trusted context-specific prices. When an existing item/options line is incremented, the adapter resolves against the resulting total line quantity and applies that unit price to the complete line.
+
+```php
+use ItmoSoft\CommerceAdapters\Services\CartPricingAdapter;
+use ItmoSoft\Cart\Models\Cart;
+
+$cart = Cart::query()->findOrFail($cartId);
+$item = app(CartPricingAdapter::class)->addPricedItem(
+    cart: $cart,
+    item: $product,
+    quantity: 2,
+    options: ['size' => 'M'],
+    context: ['customer_group' => 'wholesale'],
+);
+```
+
+The adapter stores the Pricing record ID, original four-decimal amount, rounded Cart amount, currency, quantity threshold, context and resolution timestamp in the cart item's `price_snapshot`. Cart currently persists `unit_price` and `line_total` to two decimal places, so the adapter rounds half-up to two decimals and preserves the original Pricing amount in the snapshot. It does not perform FX conversion. Pricing context must be assembled from trusted server-side values.
+
+This integration is invoked explicitly through the adapter; it does not automatically reprice existing cart lines when a price schedule changes. The Cart package currently has no public operation for replacing a line's price and snapshot without changing quantity.
+
 ## Requirements
 
 - PHP 8.3+
@@ -48,6 +70,8 @@ This listener is opt-in. It is disabled by default and requires a configured sto
 - `itmosoft/laravel-orders` (v1.0.2 or later)
 - `itmosoft/laravel-payments`
 - `itmosoft/laravel-inventory`
+- `itmosoft/laravel-cart`
+- `itmosoft/laravel-pricing`
 
 ## Installation
 
@@ -57,7 +81,7 @@ php artisan vendor:publish --tag=itmosoft-commerce-adapters-config
 php artisan migrate
 ```
 
-Ensure the Checkout, Orders, Payments and Inventory migrations are installed and run. The adapters do not create or modify core package tables.
+Ensure the Checkout, Orders, Payments, Inventory, Cart and Pricing migrations are installed and run. The adapters do not create or modify core package tables.
 
 ## Configuration
 
@@ -120,7 +144,7 @@ composer update --no-interaction --prefer-dist
 composer test
 ```
 
-The test suite includes Checkout → Orders, Payments → Orders and Inventory → Orders integration tests. CI tests PHP 8.3/8.4 with Laravel 12/13 and lowest/stable dependency strategies.
+The test suite includes Checkout → Orders, Payments → Orders, Inventory → Orders and Cart → Pricing integration tests. CI tests PHP 8.3/8.4 with Laravel 12/13 and lowest/stable dependency strategies.
 
 ## Scope and known limitations
 
@@ -139,3 +163,10 @@ This package is an optional integration layer. Core packages remain independentl
 The optional Inventory adapter reserves stock when an order enters `processing`, releases active reservations when it is cancelled, and fulfils reservations when it becomes `completed`. It uses the Inventory package's public `InventoryManager` API and deterministic per-order-line references to prevent duplicate reservations.
 
 The integration is disabled by default. Publish the config and set `ITMOSOFT_INVENTORY_ORDERS_ENABLED=true` plus `ITMOSOFT_INVENTORY_LOCATION_ID=<location id>` before enabling it. Order or item metadata may override the default location with `inventory_location_id`. Fractional quantities are rejected because the Inventory package currently uses integer stock units. See [Inventory → Orders integration](docs/INVENTORY_ORDERS.md) for lifecycle and failure behavior.
+
+
+## Cart → Pricing integration (v0.4.0)
+
+Use `app(CartPricingAdapter::class)->addPricedItem($cart, $product, $quantity, $options, $context)` instead of calling `CartManager::add()` with a client-provided or stale price. The adapter resolves the applicable `Price` using the cart currency and resulting line quantity, then delegates persistence to `CartManager`. If no price applies, it throws `CartPricingException` and does not add the line. The Cart and Pricing models must use the application's default database connection.
+
+**Money precision limitation:** Pricing stores four decimal places, while Cart currently stores two. The adapter uses half-up rounding to two decimal places for the cart amount and retains the original amount in `price_snapshot`. This is not currency-exponent-aware money arithmetic; applications handling zero- or three-decimal currencies should account for the Cart package's current two-decimal schema before using this integration.

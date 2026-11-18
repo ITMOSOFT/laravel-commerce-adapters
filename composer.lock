@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9b430fe49bf502a0f80029c085f5a483",
+    "content-hash": "b83f8e7747eedc383f15c623ee7ef515",
     "packages": [
         {
             "name": "brick/math",
@@ -1062,6 +1062,59 @@
             "time": "2026-08-24T17:13:02+00:00"
         },
         {
+            "name": "itmosoft/laravel-cart",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:ITMOSOFT/laravel-cart.git",
+                "reference": "c26a0e9ba8fa419fe535679265d9e8e137d6f2fc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ITMOSOFT/laravel-cart/zipball/c26a0e9ba8fa419fe535679265d9e8e137d6f2fc",
+                "reference": "c26a0e9ba8fa419fe535679265d9e8e137d6f2fc",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^12.0 || ^13.0",
+                "illuminate/database": "^12.0 || ^13.0",
+                "illuminate/support": "^12.0 || ^13.0",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^10.0 || ^11.0",
+                "phpunit/phpunit": "^11.0 || ^12.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "ItmoSoft\\Cart\\CartServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "ItmoSoft\\Cart\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "ItmoSoft\\Cart\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "phpunit"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "A reusable Laravel shopping cart package with persistent carts, items, quantity management, and price snapshots. Supports Laravel 12 and 13.",
+            "time": "2026-11-04T13:14:37+00:00"
+        },
+        {
             "name": "itmosoft/laravel-checkout",
             "version": "v1.0.1",
             "source": {
@@ -1278,6 +1331,58 @@
             ],
             "description": "Gateway-agnostic payment intents, transactions and webhook event tracking for Laravel applications.",
             "time": "2026-11-05T06:38:02+00:00"
+        },
+        {
+            "name": "itmosoft/laravel-pricing",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:ITMOSOFT/laravel-pricing.git",
+                "reference": "ff0aab847b252782baa9a91b1f3262bd83cc1d73"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ITMOSOFT/laravel-pricing/zipball/ff0aab847b252782baa9a91b1f3262bd83cc1d73",
+                "reference": "ff0aab847b252782baa9a91b1f3262bd83cc1d73",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "^12.0 || ^13.0",
+                "illuminate/support": "^12.0 || ^13.0",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^10.0 || ^11.0",
+                "phpunit/phpunit": "^11.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "ItmoSoft\\Pricing\\PricingServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "ItmoSoft\\Pricing\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "ItmoSoft\\Pricing\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "phpunit"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "A reusable Laravel pricing package with polymorphic prices, currency support, scheduled pricing, quantity breaks, and contextual price resolution.",
+            "time": "2026-11-04T11:51:22+00:00"
         },
         {
             "name": "laravel/framework",
@@ -9133,9 +9238,11 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "itmosoft/laravel-cart": 20,
         "itmosoft/laravel-checkout": 20,
         "itmosoft/laravel-inventory": 20,
-        "itmosoft/laravel-payments": 20
+        "itmosoft/laravel-payments": 20,
+        "itmosoft/laravel-pricing": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.0] - 2026-11-18
+
+### Added
+- Cart → Pricing adapter that resolves applicable prices before cart insertion.
+- Quantity-break resolution against the resulting merged cart-line quantity.
+- Context-aware and currency-aware price resolution using the Pricing package's public `PriceResolver`.
+- Price provenance snapshots containing source price ID, original amount, cart amount, context and resolution time.
+- Cart/Pricing integration tests for price resolution, quantity breaks, context, currency, schedules, rounding and options.
+
+### Changed
+- Added `itmosoft/laravel-cart` and `itmosoft/laravel-pricing` dependencies.
+- Cart line persistence remains delegated to `CartManager`; no Cart or Pricing tables are written directly.
+- Cart's two-decimal money contract is made explicit; four-decimal Pricing amounts are rounded half-up for Cart and retained in the snapshot.
+
+
 ## [0.3.0] - 2026-11-18
 
 ### Added

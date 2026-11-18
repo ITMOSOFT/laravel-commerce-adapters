@@ -2,11 +2,13 @@
 
 namespace ItmoSoft\CommerceAdapters\Tests;
 
+use ItmoSoft\Cart\CartServiceProvider;
 use ItmoSoft\Checkout\CheckoutServiceProvider;
 use ItmoSoft\CommerceAdapters\CommerceAdaptersServiceProvider;
 use ItmoSoft\Orders\OrdersServiceProvider;
 use ItmoSoft\Inventory\InventoryServiceProvider;
 use ItmoSoft\Payments\PaymentsServiceProvider;
+use ItmoSoft\Pricing\PricingServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
@@ -14,6 +16,8 @@ abstract class TestCase extends Orchestra
     protected function getPackageProviders($app): array
     {
         return [
+            CartServiceProvider::class,
+            PricingServiceProvider::class,
             CheckoutServiceProvider::class,
             OrdersServiceProvider::class,
             InventoryServiceProvider::class,
@@ -25,6 +29,9 @@ abstract class TestCase extends Orchestra
     protected function defineEnvironment($app): void
     {
         $app['config']->set('database.default', 'testing');
+        $app['config']->set('itmosoft-cart.table_prefix', 'cart_');
+        $app['config']->set('pricing.table_prefix', 'pricing_');
+        $app['config']->set('pricing.default_currency', 'USD');
         $app['config']->set('database.connections.testing', [
             'driver' => 'sqlite',
             'database' => ':memory:',

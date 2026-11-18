@@ -14,3 +14,8 @@
 12. Inventory allocation currently uses one location per order line (with metadata override). Split warehouse allocation, backorders, partial shipments and reservation expiry automation are not included.
 13. Inventory listener is opt-in. Applications must configure a stock location before enabling it.
 14. SQLite tests do not prove production row-lock behavior for inventory reservation concurrency; test with the production database engine.
+
+15. Cart/Pricing precision: Pricing stores four decimal places while Cart stores two. CartPricingAdapter rounds half-up and preserves the original amount in the snapshot; this is not currency-exponent-aware money arithmetic.
+16. Cart repricing: no automatic repricing of existing cart lines when scheduled prices change because Cart currently exposes no public API to update a line's price and snapshot independently of quantity.
+17. Cart pricing context must be assembled from trusted server-side data; this package does not authenticate customer-group or regional context.
+18. Cart/Pricing integration requires the Cart, priceable and Pricing models to use the application's default database connection.

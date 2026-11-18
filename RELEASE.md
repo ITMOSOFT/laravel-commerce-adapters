@@ -1,7 +1,7 @@
-# Release v0.3.0
+# Release v0.4.0
 
 ## Summary
-Adds an optional Inventory → Orders lifecycle adapter while retaining Checkout → Orders and Payments → Orders.
+Adds the Cart → Pricing adapter while retaining Checkout → Orders, Payments → Orders and Inventory → Orders.
 
 ## Before release
 
@@ -15,52 +15,48 @@ composer validate --no-check-publish
 
 ## GitHub release
 
-**Tag:** `v0.3.0`
+**Tag:** `v0.4.0`
 
-**Title:** `v0.3.0 – Inventory to Orders Integration`
+**Title:** `v0.4.0 – Cart to Pricing Integration`
 
 ## Release notes
 
 ### What's new
-- Reserve stock when an order enters processing.
-- Release active reservations when an order is cancelled.
-- Fulfil reservations and decrement on-hand stock when an order is completed.
-- Prevent duplicate reservations/fulfilments using deterministic order-line references.
-- Block processing when stock is insufficient.
-- Preserve captured payment records when inventory prevents order processing.
-- Configure a default stock location or override it in order/item metadata.
+- Resolve applicable prices through `PriceResolver` before adding cart lines.
+- Respect cart currency, quantity breaks, active schedules and trusted context-specific pricing.
+- Resolve quantity breaks against the resulting merged cart-line quantity.
+- Persist price provenance in the Cart package's existing `price_snapshot` field.
+- Delegate all cart writes to the Cart package's public `CartManager` API.
 
 ### Compatibility
 - PHP 8.3+
 - Laravel 12 and 13
-- `itmosoft/laravel-checkout`
-- `itmosoft/laravel-orders`
-- `itmosoft/laravel-payments`
-- `itmosoft/laravel-inventory`
-
-### Configuration
-Inventory automation is disabled by default. Set `ITMOSOFT_INVENTORY_ORDERS_ENABLED=true` and configure `ITMOSOFT_INVENTORY_LOCATION_ID` before enabling it. See `docs/INVENTORY_ORDERS.md`.
+- `itmosoft/laravel-cart`
+- `itmosoft/laravel-pricing`
+- Existing Checkout, Orders, Payments and Inventory dependencies.
 
 ### Important limitations
-- Inventory quantities must be whole numbers.
-- Orders and Inventory must share the same default database connection.
-- No automatic reservation expiry, split shipments, backorders, or multi-warehouse allocation.
+- Cart stores money at two decimal places; Pricing stores four. The adapter rounds half-up to two decimals and retains the original amount in the snapshot.
+- No FX conversion or currency-exponent-aware money arithmetic is performed.
+- Existing cart lines are not automatically repriced when schedules change; the Cart package currently has no public price-update operation independent of quantity.
+- Pricing context must be supplied from trusted server-side values.
+- Cart, item and Pricing models must use the default database connection.
 
 ### Testing
-Run the complete PHPUnit suite against both lowest and stable dependency sets. Do not claim test success until both commands pass locally and GitHub Actions is green.
+Run both lowest and stable dependency strategies and ensure GitHub Actions is green. Do not claim test success until the commands pass locally.
 
 ## Local Git commands
 
-Run these commands yourself after both dependency strategies pass:
+Run these commands yourself after tests pass:
 
 ```bash
 git status
 git add .
-git commit -m "feat: add inventory to orders integration"
+git commit -m "feat: add cart to pricing integration"
 git push origin main
 
-git tag -a v0.3.0 -m "Release v0.3.0"
-git push origin v0.3.0
+git tag -a v0.4.0 -m "Release v0.4.0"
+git push origin v0.4.0
 ```
 
-Create the GitHub Release from tag `v0.3.0` using the title and release notes above. If Packagist is connected to the repository webhook, it should discover the tag automatically; otherwise trigger an update from the package page.
+Create the GitHub Release from tag `v0.4.0` using the title and release notes above. If Packagist is connected to the repository webhook, it should discover the tag automatically; otherwise trigger an update from the package page.

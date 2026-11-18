@@ -70,3 +70,32 @@ A line is stock-tracked when both `product_type` and `product_id` are present. T
 - Orders and Inventory must share the same default database connection.
 
 The integration is opt-in and disabled by default. Configure a default location ID or provide `inventory_location_id` in order/item metadata. Item metadata overrides order metadata, which overrides the configured default.
+
+
+## Cart → Pricing
+
+### Source of truth
+
+- Pricing owns price records and price resolution rules.
+- Cart owns cart lines, quantities, unit-price snapshots and line totals.
+- The adapter calls `PriceResolver::resolve()` and delegates cart persistence to `CartManager::add()`; it does not write directly to either package's tables.
+
+### Add contract
+
+- The cart currency is the requested pricing currency.
+- Price resolution receives the item model, currency, trusted context, resolution time and resulting line quantity.
+- For an existing item/options line, the adapter adds the requested quantity to the existing quantity before resolving, so quantity breaks apply to the final line quantity.
+- A missing applicable price or negative amount throws `CartPricingException`; no cart line is added.
+- Cart's own merge and validation rules remain authoritative because all writes go through `CartManager`.
+
+### Snapshot and precision
+
+The existing `price_snapshot` field records source package, Price ID, original Pricing amount, rounded Cart unit price, currency, context, threshold, quantity and resolution timestamp. Pricing amounts are decimal(19,4), while Cart unit prices are decimal(14,2); the adapter uses half-up rounding to two decimals. The original four-decimal amount remains in the snapshot. No FX conversion or currency-exponent-aware arithmetic is performed.
+
+### Context and repricing
+
+Context must be trusted server-side data (for example, a verified customer group), not unvalidated request input. This adapter handles price resolution when adding/incrementing a line. It does not automatically reprice existing lines after a scheduled price change because Cart currently exposes no public price-and-snapshot update method independent of quantity.
+
+### Connection requirement
+
+Cart, the priceable model and the configured Pricing model must use the application's default database connection.

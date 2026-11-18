@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use ItmoSoft\CommerceAdapters\Listeners\InventoryOrderEventListener;
 use ItmoSoft\CommerceAdapters\Listeners\PaymentOrderEventListener;
+use ItmoSoft\CommerceAdapters\Services\CartPricingAdapter;
 use ItmoSoft\CommerceAdapters\Services\CheckoutOrderAdapter;
 use ItmoSoft\CommerceAdapters\Services\InventoryOrderAdapter;
 use ItmoSoft\CommerceAdapters\Services\PaymentOrderAdapter;
@@ -19,6 +20,9 @@ class CommerceAdaptersServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/commerce-adapters.php', 'itmosoft-commerce-adapters');
+
+        $this->app->singleton(CartPricingAdapter::class);
+        $this->app->alias(CartPricingAdapter::class, 'itmosoft.commerce-adapters.cart-pricing');
 
         $this->app->singleton(CheckoutOrderAdapter::class);
         $this->app->alias(CheckoutOrderAdapter::class, 'itmosoft.commerce-adapters.checkout-orders');
