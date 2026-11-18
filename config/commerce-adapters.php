@@ -6,6 +6,14 @@ return [
         'metadata_key' => 'itmosoft_commerce_adapters',
     ],
 
+    'checkout_tax' => [
+        // Tax class is supplied explicitly because Checkout snapshots do not
+        // currently carry a canonical tax-class identifier per line.
+        'destination' => env('ITMOSOFT_CHECKOUT_TAX_DESTINATION', 'shipping'),
+        'include_shipping' => env('ITMOSOFT_CHECKOUT_TAX_INCLUDE_SHIPPING', false),
+        'rounding_scale' => env('ITMOSOFT_CHECKOUT_TAX_ROUNDING_SCALE', 2),
+    ],
+
     'checkout_shipping' => [
         // Shipping quotes are resolved on demand and revalidated when selected.
         'default_weight' => env('ITMOSOFT_CHECKOUT_SHIPPING_DEFAULT_WEIGHT', 0),

@@ -104,6 +104,20 @@ Configure `ITMOSOFT_CART_INVENTORY_LOCATION_ID` or pass a `StockLocation` / loca
 
 **Important:** this is an availability check, not a stock reservation. Adding an item to a cart does not change `quantity_reserved`; abandoned carts therefore do not hold stock. Two different carts can both pass an availability check for the same remaining units. The authoritative reservation still happens in Inventory → Orders when an order enters `processing`. Treat cart availability as advisory and handle reservation failure at order processing.
 
+### Checkout → Tax (v0.7.0)
+
+`CheckoutTaxAdapter` resolves location-specific rates through `TaxResolver`, calculates exclusive tax through `TaxCalculator`, applies it through `CheckoutManager::setTotals()` where supported, and stores a calculation snapshot under `metadata.itmosoft_tax`. A tax class must be supplied explicitly because the current Checkout cart snapshot does not define a canonical tax class per line. See [Checkout → Tax integration](docs/CHECKOUT_TAX.md).
+
+```php
+use ItmoSoft\CommerceAdapters\Services\CheckoutTaxAdapter;
+use ItmoSoft\Tax\Models\TaxClass;
+
+$class = TaxClass::query()->where('code', 'standard')->firstOrFail();
+$result = app(CheckoutTaxAdapter::class)->calculateForCheckout($checkoutSession, $class);
+```
+
+Configure `ITMOSOFT_CHECKOUT_TAX_DESTINATION` as `shipping` (default) or `billing`; set `ITMOSOFT_CHECKOUT_TAX_INCLUDE_SHIPPING=true` when shipping is taxable. Pass `apply: false` for a preview. Exclusive tax only is supported because Checkout currently adds the tax field to the order total. Mixed tax-class line allocation and currency-exponent-aware arithmetic are not implemented.
+
 ## Requirements
 
 - PHP 8.3+
@@ -115,6 +129,7 @@ Configure `ITMOSOFT_CART_INVENTORY_LOCATION_ID` or pass a `StockLocation` / loca
 - `itmosoft/laravel-cart`
 - `itmosoft/laravel-pricing`
 - `itmosoft/laravel-shipping`
+- `itmosoft/laravel-tax`
 
 ## Installation
 
@@ -124,7 +139,7 @@ php artisan vendor:publish --tag=itmosoft-commerce-adapters-config
 php artisan migrate
 ```
 
-Ensure the Checkout, Orders, Payments, Inventory, Cart, Pricing and Shipping migrations are installed and run. The adapters do not create or modify core package tables.
+Ensure the Checkout, Orders, Payments, Inventory, Cart, Pricing, Shipping and Tax migrations are installed and run. The adapters do not create or modify core package tables.
 
 ## Configuration
 
@@ -193,7 +208,7 @@ composer update --no-interaction --prefer-dist
 composer test
 ```
 
-The test suite includes Checkout → Orders, Checkout → Shipping, Payments → Orders, Inventory → Orders, Cart → Pricing and Cart → Inventory integration tests. CI tests PHP 8.3/8.4 with Laravel 12/13 and lowest/stable dependency strategies.
+The test suite includes Checkout → Orders, Checkout → Shipping, Checkout → Tax, Payments → Orders, Inventory → Orders, Cart → Pricing and Cart → Inventory integration tests. CI tests PHP 8.3/8.4 with Laravel 12/13 and lowest/stable dependency strategies.
 
 ## Scope and known limitations
 

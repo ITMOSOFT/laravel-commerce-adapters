@@ -9,6 +9,7 @@ use ItmoSoft\Orders\OrdersServiceProvider;
 use ItmoSoft\Inventory\InventoryServiceProvider;
 use ItmoSoft\Payments\PaymentsServiceProvider;
 use ItmoSoft\Shipping\ShippingServiceProvider;
+use ItmoSoft\Tax\TaxServiceProvider;
 use ItmoSoft\Pricing\PricingServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
@@ -24,6 +25,7 @@ abstract class TestCase extends Orchestra
             InventoryServiceProvider::class,
             PaymentsServiceProvider::class,
             ShippingServiceProvider::class,
+            TaxServiceProvider::class,
             CommerceAdaptersServiceProvider::class,
         ];
     }

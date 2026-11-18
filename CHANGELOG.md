@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.7.0] - 2026-11-18
+
+### Added
+- Checkout → Tax adapter using the Tax package's public TaxResolver and TaxCalculator APIs.
+- Explicit tax-class selection, shipping/billing destination resolution, optional shipping taxability, and preview mode.
+- Tax calculation snapshot stored in Checkout metadata for downstream auditability.
+- Checkout Tax integration tests for application, preview, destination, taxable base, missing destination, state and no-match behavior.
+
+### Notes
+- Exclusive tax only; Checkout's current total contract adds tax to subtotal.
+- One tax class is applied per checkout calculation; mixed-class per-line allocation is not inferred.
+- Checkout and Tax must use the default database connection.
+- Legal tax obligations and tax-rule correctness remain the application's responsibility.
+
+
 ## [0.6.0] - 2026-11-18
 
 ### Added
