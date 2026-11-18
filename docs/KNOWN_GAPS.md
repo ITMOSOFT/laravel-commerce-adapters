@@ -1,10 +1,12 @@
-# Known gaps and operational notes
+# Known gaps
 
-1. **Synchronous OrderCreated event:** the Orders package dispatches the event before its own transaction returns. An outer adapter transaction cannot make synchronous listeners after-commit. External side effects must be deferred by listeners.
-2. **Default database connection:** atomicity requires Checkout and Orders models and service transactions to use the same default connection.
-3. **Customer morph:** checkout stores only `user_id`, not a polymorphic customer. The adapter uses a configured morph type and never guesses an application user model.
-4. **Money representation:** current upstream Orders service uses floats internally. The adapter passes through checkout decimal values but does not solve the upstream precision issue.
-5. **Payment and inventory:** order creation does not imply payment capture or inventory reservation.
-6. **Shipping/tax calculation:** this adapter transfers selected method and calculated totals; it does not calculate rates or taxes.
-7. **SQLite concurrency:** SQLite tests prove behavior and mapping, not production row-lock semantics. Validate concurrency on the production database engine.
-8. **Custom model configuration:** underlying packages may configure custom model classes. The adapter reads the configured Orders model for idempotent lookup; the Checkout session is reloaded using the passed model class.
+1. Payment amount precision: the current Payments package stores `decimal(14,2)` and uses floats. Orders stores totals to four decimal places. The adapter rounds aggregate comparisons to two decimal places to match Payments; this is not a replacement for a shared Money value object and currency-exponent-aware arithmetic.
+2. Payment cancellation: Payments does not currently emit a cancellation event. No order transition is inferred from a cancelled payment.
+3. Failed attempts: failures leave the order pending to allow retry. Applications that want to cancel after a retry limit must implement that policy explicitly.
+4. Partial refunds: no dedicated partially-refunded order status exists, so partial refunds leave order status unchanged.
+5. Refund before full collection: if the order is still pending when all captured funds are refunded, the adapter does not force an invalid pending → refunded transition. Manual reconciliation is required.
+6. Multi-currency: linked payments with a currency different from the order currency are not automatically reconciled.
+7. External gateway operations: this adapter does not call a gateway or verify provider webhook signatures.
+8. Event timing: existing package events are synchronous. External listeners should defer side effects until after commit.
+9. Concurrency: SQLite tests do not prove production row-lock behavior. Test with the target database engine.
+10. No payment allocation across multiple orders or one payment shared by several orders.

@@ -2,8 +2,14 @@
 
 namespace ItmoSoft\CommerceAdapters;
 
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use ItmoSoft\CommerceAdapters\Listeners\PaymentOrderEventListener;
 use ItmoSoft\CommerceAdapters\Services\CheckoutOrderAdapter;
+use ItmoSoft\CommerceAdapters\Services\PaymentOrderAdapter;
+use ItmoSoft\Payments\Events\PaymentCaptured;
+use ItmoSoft\Payments\Events\PaymentFailed;
+use ItmoSoft\Payments\Events\PaymentRefundUpdated;
 
 class CommerceAdaptersServiceProvider extends ServiceProvider
 {
@@ -13,6 +19,9 @@ class CommerceAdaptersServiceProvider extends ServiceProvider
 
         $this->app->singleton(CheckoutOrderAdapter::class);
         $this->app->alias(CheckoutOrderAdapter::class, 'itmosoft.commerce-adapters.checkout-orders');
+
+        $this->app->singleton(PaymentOrderAdapter::class);
+        $this->app->alias(PaymentOrderAdapter::class, 'itmosoft.commerce-adapters.payment-orders');
     }
 
     public function boot(): void
@@ -20,5 +29,20 @@ class CommerceAdaptersServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../config/commerce-adapters.php' => config_path('itmosoft-commerce-adapters.php'),
         ], 'itmosoft-commerce-adapters-config');
+
+        if (config('itmosoft-commerce-adapters.payments_orders.enabled', true)) {
+            Event::listen(
+                PaymentCaptured::class,
+                PaymentOrderEventListener::class.'@handleCaptured'
+            );
+            Event::listen(
+                PaymentFailed::class,
+                PaymentOrderEventListener::class.'@handleFailed'
+            );
+            Event::listen(
+                PaymentRefundUpdated::class,
+                PaymentOrderEventListener::class.'@handleRefundUpdated'
+            );
+        }
     }
 }

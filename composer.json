@@ -7,9 +7,11 @@
         "php": "^8.3",
         "illuminate/contracts": "^12.0 || ^13.0",
         "illuminate/database": "^12.0 || ^13.0",
+        "illuminate/events": "^12.0 || ^13.0",
         "illuminate/support": "^12.0 || ^13.0",
         "itmosoft/laravel-checkout": "^1.0 || dev-main",
-        "itmosoft/laravel-orders": "^1.0.2"
+        "itmosoft/laravel-orders": "^1.0.2",
+        "itmosoft/laravel-payments": "^1.0 || dev-main"
     },
     "require-dev": {
         "orchestra/testbench": "^10.0 || ^11.0",
@@ -34,6 +36,11 @@
         {
             "type": "vcs",
             "url": "https://github.com/ITMOSOFT/laravel-orders.git",
+            "canonical": false
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/ITMOSOFT/laravel-payments.git",
             "canonical": false
         }
     ],

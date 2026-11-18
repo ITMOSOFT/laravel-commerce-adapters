@@ -1,17 +1,23 @@
 # Changelog
 
-## [0.1.1] - 2026-11-18
+## [0.2.0] - 2026-11-18
 
-- Require laravel-orders ^1.0.2 because v1.0.0 and v1.0.1 contain invalid Laravel Composer provider metadata.
-- Simplify CI dependency installation to a single Composer update per matrix entry.
-- Pin CI runner to Ubuntu 24.04 to avoid the announced ubuntu-latest image migration.
-- Normalize JSON-backed Checkout metadata and shipping details across package versions, including models without array casts.
-- Persist the adapter order reference as JSON so repeated conversion remains idempotent on older Checkout models.
-- Make tests decode metadata consistently whether Eloquent returns arrays or JSON strings.
+### Added
+- Added optional Payments → Orders lifecycle adapter.
+- Added automatic listeners for payment capture, failure and refund updates.
+- Added aggregate capture/refund reconciliation across multiple payment records linked to an order.
+- Added conservative order transitions: pending → processing after full collection; processing/completed → refunded after full refund.
+- Added manual synchronization API and structured result DTO.
+- Added eleven Payments → Orders integration tests, including a regression check that an unused failed attempt in another currency does not block a valid capture.
 
-## [0.1.0] - 2026-11-18
+### Preserved
+- Existing Checkout → Orders adapter and its regression tests.
 
-- Initial optional Checkout → Orders adapter.
-- Maps checkout snapshots, totals, addresses, customer morph configuration and metadata.
-- Adds transactional checkout completion and metadata-based idempotency.
-- Adds integration tests and Laravel 12/13 CI workflow.
+### Fixed
+- Decode JSON-backed Checkout metadata and shipping details when using older Checkout model versions that do not define array casts. This preserves incoming metadata and makes repeated conversion idempotency work across the supported dependency range.
+- Made Checkout integration test fixtures explicitly JSON-encode `shipping_details` and `metadata` for compatibility with the minimum supported Checkout model casts.
+
+### Notes
+- Failed payment attempts intentionally do not cancel orders.
+- Partial refunds intentionally do not change order status.
+- Amount comparisons follow the current Payments package's two-decimal amount contract.

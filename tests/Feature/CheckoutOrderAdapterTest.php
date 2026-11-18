@@ -29,8 +29,8 @@ class CheckoutOrderAdapterTest extends TestCase
 
     protected function makeSession(array $overrides = []): CheckoutSession
     {
-        // Checkout v1.0.0 does not cast shipping_details or metadata.
-        // Persist them as JSON so fixtures work against the supported minimum.
+        // The minimum supported Checkout release does not cast these fields.
+        // Encode them explicitly so the fixtures work with both old and new models.
         $attributes = array_replace([
             'public_id' => (string) \Illuminate\Support\Str::uuid(),
             'cart_id' => 55,
@@ -73,8 +73,13 @@ class CheckoutOrderAdapterTest extends TestCase
             'metadata' => ['campaign' => 'winter'],
         ], $overrides);
 
+        $model = new CheckoutSession();
+
         foreach (['shipping_details', 'metadata'] as $jsonColumn) {
-            if (is_array($attributes[$jsonColumn] ?? null)) {
+            if (
+                is_array($attributes[$jsonColumn] ?? null)
+                && ! $model->hasCast($jsonColumn)
+            ) {
                 $attributes[$jsonColumn] = json_encode(
                     $attributes[$jsonColumn],
                     JSON_THROW_ON_ERROR

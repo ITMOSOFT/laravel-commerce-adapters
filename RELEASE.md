@@ -1,14 +1,18 @@
-# Release guide
+# Release instructions
 
-## Repository
+## Package
 
-- Repository: `ITMOSOFT/laravel-commerce-adapters`
+- GitHub repository: `ITMOSOFT/laravel-commerce-adapters`
 - Composer package: `itmosoft/laravel-commerce-adapters`
-- Description: `Optional integration adapters connecting independent ITMOSOFT Laravel commerce packages.`
+- Version: `v0.2.0`
+- Release title: `v0.2.0 — Payments-to-Orders Lifecycle Integration`
+- Description: `Adds an optional Payments-to-Orders adapter with aggregate capture/refund reconciliation, retry-safe failed-payment handling, idempotent order transitions, and integration tests. Preserves the existing Checkout-to-Orders adapter.`
 
-Create an empty public GitHub repository with the name above, then extract this ZIP into your already initialized and connected local repository.
+## Repository description
 
-## Validate and test
+`Optional integration adapters connecting independent ITMOSOFT Laravel commerce packages.`
+
+## Install and test
 
 ```bash
 composer validate --strict
@@ -16,55 +20,44 @@ composer update --no-interaction --prefer-dist
 composer test
 ```
 
-The test suite requires the upstream Checkout and Orders packages. Composer is configured to resolve their public Git repositories when stable Packagist versions are unavailable.
+Lowest dependency strategy:
+
+```bash
+composer update --no-interaction --prefer-dist --prefer-lowest
+composer test
+```
 
 ## User-run Git commands
 
-Only after local tests pass:
+Run these only after local tests pass and the GitHub Actions matrix is green:
 
 ```bash
 git add .
-git commit -m "feat: add checkout to orders commerce adapter"
-git push -u origin main
+git commit -m "feat: add payments-to-orders lifecycle adapter"
+git push origin main
+
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
-After the GitHub Actions workflow is green:
+Do not create the tag until CI is green. These commands are for the repository owner to run; no GitHub writes are performed by the assistant.
 
-```bash
-git tag -a v0.1.1 -m "Fix minimum Orders dependency compatibility"
-git push origin v0.1.1
-```
+## GitHub Release notes
 
-## GitHub Release
+### What's Changed
+- Added Payments → Orders lifecycle synchronization.
+- Automatically advances pending orders to processing after aggregate captured payments meet the order total.
+- Leaves orders pending after failed payment attempts so retry remains possible.
+- Marks processing/completed orders refunded only after all linked captured funds are refunded.
+- Handles multiple payment records per order and ignores currency mismatches without rolling back the payment event.
+- Added manual synchronization API and regression coverage.
+- Preserved Checkout → Orders integration and corrected its fixtures for older Checkout model casts.
 
-**Title:** `v0.1.1 — Fix minimum Orders dependency compatibility`
-
-**Description:**
-
-### Fixed
-- Raise the minimum `itmosoft/laravel-orders` dependency to `^1.0.2`, avoiding broken Composer metadata in releases v1.0.0 and v1.0.1.
-- Run one Composer dependency resolution per CI matrix job.
-- Pin GitHub Actions runner to Ubuntu 24.04.
-
-### Included
-- Optional Checkout → Orders adapter.
-- Maps checkout cart snapshots and totals to order records.
-- Preserves product morph identifiers, SKU, quantity, prices, item snapshots, options, addresses and shipping details.
-- Stores the created order reference in checkout metadata.
-- Completes checkout and creates the order within one database transaction.
-- Returns the existing order on repeated conversion attempts.
-- Adds integration tests and Laravel 12/13 CI matrix.
-
-### Notes
-- Requires `itmosoft/laravel-checkout` and `itmosoft/laravel-orders`.
-- Payment capture and inventory reservation remain separate workflows.
-- Synchronous `OrderCreated` listeners should defer external side effects until after commit.
-- Both packages must use the same default database connection.
+### Testing
+- Run the full PHPUnit suite locally.
+- Confirm every PHP/Laravel/dependency matrix job is green before publishing.
+- Static validation is not a substitute for PHPUnit or GitHub Actions.
 
 ## Packagist
 
-After the GitHub repository and tag are available, submit `https://github.com/ITMOSOFT/laravel-commerce-adapters` to Packagist or update the existing package webhook. Verify that Packagist indexes `v0.1.1` before installing by version.
-
-
-### Compatibility note
-The adapter explicitly decodes JSON-backed metadata and shipping details and persists the adapter reference as JSON. This supports Checkout versions that return arrays as well as older versions that return raw JSON strings.
+If the package is already registered on Packagist, confirm its GitHub webhook updates the new tag. Otherwise submit `https://github.com/ITMOSOFT/laravel-commerce-adapters` as the package repository.

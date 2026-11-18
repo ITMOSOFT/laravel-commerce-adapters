@@ -2,21 +2,33 @@
 
 Optional integration adapters for independent ITMOSOFT Laravel commerce packages.
 
-## Current adapter
+## Included adapters
 
 ### Checkout → Orders
 
-`CheckoutOrderAdapter` converts an `ItmoSoft\Checkout\Models\CheckoutSession` into an `ItmoSoft\Orders\Models\Order`.
+`CheckoutOrderAdapter` converts a pending `CheckoutSession` into an Order, maps cart snapshots and totals, stores an idempotency reference in checkout metadata, and completes the session in one database transaction.
 
-It maps:
+### Payments → Orders
 
-- `cart_snapshot` entries to order items, including product morph identifiers, SKU, quantity, unit price, line total, original item snapshot and options.
-- Checkout totals (`subtotal`, `discount`, `tax`, `shipping`, `grand_total`) to order totals.
-- Billing and shipping address snapshots.
-- Checkout user ID to the order customer morph only when `customer_type` is configured.
-- Shipping method/details and original checkout metadata into order metadata.
+`PaymentOrderAdapter` synchronizes the payment ledger with the order lifecycle.
 
-The adapter then stores the resulting order reference in checkout metadata and completes the checkout session.
+By default, the service provider listens to:
+
+- `PaymentCaptured`
+- `PaymentFailed`
+- `PaymentRefundUpdated`
+
+The default rules are deliberately conservative:
+
+1. A pending order moves to `processing` only when the aggregate captured amount across all payments linked by `order_id` meets or exceeds the order's `grand_total`.
+2. Partial captures do not advance the order until the full order total has been collected.
+3. A failed payment attempt does not cancel the order; another payment attempt may be made.
+4. Partial refunds do not change order status.
+5. An order in `processing` or `completed` moves to `refunded` only when all captured amounts across its linked payments have been refunded.
+6. Currency mismatches are ignored for automatic order transitions and do not throw from the payment event listener.
+7. Repeated events are idempotent because each synchronization recalculates from the current payment ledger and respects the current order state.
+
+`processing` means payment collection is complete; it does not mean fulfilment is complete.
 
 ## Requirements
 
@@ -24,65 +36,68 @@ The adapter then stores the resulting order reference in checkout metadata and c
 - Laravel 12 or 13
 - `itmosoft/laravel-checkout`
 - `itmosoft/laravel-orders` (v1.0.2 or later)
+- `itmosoft/laravel-payments`
 
 ## Installation
 
 ```bash
 composer require itmosoft/laravel-commerce-adapters
 php artisan vendor:publish --tag=itmosoft-commerce-adapters-config
+php artisan migrate
 ```
 
-Publish and run the underlying packages' migrations as documented by those packages.
+Ensure the Checkout, Orders and Payments migrations are installed and run. The integration does not create or modify their tables.
 
-Configure the customer morph type if checkout `user_id` should become an order customer:
+## Configuration
 
 ```php
 // config/itmosoft-commerce-adapters.php
 return [
     'checkout_orders' => [
-        'customer_type' => 'user', // or the configured morph-map alias / model class
+        'customer_type' => 'user',
         'metadata_key' => 'itmosoft_commerce_adapters',
+    ],
+    'payments_orders' => [
+        'enabled' => true,
+        'process_on_full_capture' => true,
+        'refund_on_full_refund' => true,
     ],
 ];
 ```
 
-The morph type must match your application's Eloquent morph-map convention. If it is not configured, the adapter deliberately leaves the order customer unset rather than guessing the user model.
+Set `ITMOSOFT_PAYMENTS_ORDERS_ENABLED=false` to disable automatic event listeners and orchestrate the adapter manually.
 
 ## Usage
 
-```php
-use ItmoSoft\Checkout\Models\CheckoutSession;
-use ItmoSoft\CommerceAdapters\Services\CheckoutOrderAdapter;
+Automatic event handling is enabled by default when this package is installed.
 
-$session = CheckoutSession::query()->findOrFail($checkoutSessionId);
-
-$order = app(CheckoutOrderAdapter::class)->createOrder($session);
-```
-
-Optional order-field overrides can be supplied as the second argument:
+For explicit/manual synchronization:
 
 ```php
-$order = app(CheckoutOrderAdapter::class)->createOrder($session, [
-    'notes' => 'Created from website checkout',
-]);
+use ItmoSoft\CommerceAdapters\Services\PaymentOrderAdapter;
+use ItmoSoft\Payments\Models\Payment;
+
+$payment = Payment::query()->findOrFail($paymentId);
+
+$result = app(PaymentOrderAdapter::class)->handleCaptured($payment);
+// or:
+$result = app(PaymentOrderAdapter::class)->handleRefundUpdated($payment);
+
+if ($result->changed()) {
+    // $result->order contains the updated order.
+}
 ```
 
-## Transaction and idempotency behavior
+`handleFailed()` intentionally leaves the order unchanged.
 
-- The adapter locks the checkout row with `lockForUpdate()`.
-- Order creation, storing the order reference in checkout metadata, and checkout completion run inside one database transaction.
-- A repeated call returns the linked order instead of creating a duplicate.
-- A completed checkout without this adapter's order reference is rejected.
-- Both packages must use the application's default database connection. The adapter checks the checkout model's connection before proceeding.
-- The adapter does not reserve or decrement inventory and does not authorize/capture payment. Those are separate workflows.
+## Transaction and connection requirements
 
-## Important event caveat
-
-The current Orders package dispatches `OrderCreated` synchronously from inside its own transaction. This adapter's outer transaction keeps database writes atomic, but a synchronous listener may run before the outer transaction commits. Event listeners that perform external side effects should be queued after commit (or otherwise defer side effects until commit). This adapter does not alter the Orders package's event implementation.
+- Payments and Orders must use the application's default database connection for automatic synchronization.
+- Payment capture/refund events are currently dispatched synchronously inside the Payments package's database transaction. The adapter runs its order update on the same connection so database changes participate in that transaction.
+- The Orders package dispatches `OrderStatusChanged` synchronously. External side effects in listeners should be deferred until after commit.
+- SQLite tests verify behavior, not production row-lock concurrency. Validate the workflow against the production database engine before relying on concurrency guarantees.
 
 ## Testing
-
-The test suite uses SQLite in-memory and loads the Checkout and Orders service providers.
 
 ```bash
 composer validate --strict
@@ -90,16 +105,16 @@ composer update --no-interaction --prefer-dist
 composer test
 ```
 
-The Composer VCS repositories are included so the dependent packages can resolve their public default branches when their stable Packagist releases are unavailable. Stable releases are preferred when available.
+The test suite includes Checkout → Orders and Payments → Orders integration tests. CI tests PHP 8.3/8.4 with Laravel 12/13 and lowest/stable dependency strategies.
 
-## Scope
+## Scope and known limitations
 
-This package is an optional adapter layer. It does not make Checkout depend on Orders, and neither core package depends on this adapter.
+- This package does not call payment gateways, authorize payments, capture funds, or initiate refunds. It reacts to state changes recorded by `laravel-payments`.
+- `laravel-payments` currently stores amounts with two decimal places and uses floating-point arithmetic in its manager. This adapter follows that existing contract and rounds aggregate comparisons to two decimals; it does not solve the broader money precision issue.
+- The adapter assumes payments linked to one order use the order's currency. If any linked payment has a different currency, it skips automatic order status changes.
+- A fully refunded payment against an order that is still `pending` does not automatically cancel or refund the order; manual reconciliation is required.
+- The current Payments package does not emit a payment-cancelled event, so cancellation is not synchronized.
+- The integration does not implement deposits, installment schedules, partial-payment order statuses, chargebacks, disputes, or payment allocation across multiple orders.
+- The adapter does not change either core package's schema or introduce a foreign key between payments and orders.
 
-Not included:
-- Payment authorization/capture.
-- Inventory reservation/fulfilment.
-- Tax/shipping provider calculation.
-- Customer model discovery.
-- Cross-database distributed transactions.
-- A new checkout/order foreign-key migration.
+This package is an optional integration layer. Core packages remain independently usable.
