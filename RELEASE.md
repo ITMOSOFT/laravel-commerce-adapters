@@ -64,3 +64,7 @@ git push origin v0.1.1
 ## Packagist
 
 After the GitHub repository and tag are available, submit `https://github.com/ITMOSOFT/laravel-commerce-adapters` to Packagist or update the existing package webhook. Verify that Packagist indexes `v0.1.1` before installing by version.
+
+
+### Compatibility note
+The adapter explicitly decodes JSON-backed metadata and shipping details and persists the adapter reference as JSON. This supports Checkout versions that return arrays as well as older versions that return raw JSON strings.

@@ -12,9 +12,26 @@ use RuntimeException;
 
 class CheckoutOrderAdapterTest extends TestCase
 {
+    protected function decodedArray(mixed $value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        return [];
+    }
+
     protected function makeSession(array $overrides = []): CheckoutSession
     {
-        return CheckoutSession::query()->create(array_replace([
+        // Checkout v1.0.0 does not cast shipping_details or metadata.
+        // Persist them as JSON so fixtures work against the supported minimum.
+        $attributes = array_replace([
             'public_id' => (string) \Illuminate\Support\Str::uuid(),
             'cart_id' => 55,
             'user_id' => 7,
@@ -54,7 +71,18 @@ class CheckoutOrderAdapterTest extends TestCase
                 'grand_total' => '27.0000',
             ],
             'metadata' => ['campaign' => 'winter'],
-        ], $overrides));
+        ], $overrides);
+
+        foreach (['shipping_details', 'metadata'] as $jsonColumn) {
+            if (is_array($attributes[$jsonColumn] ?? null)) {
+                $attributes[$jsonColumn] = json_encode(
+                    $attributes[$jsonColumn],
+                    JSON_THROW_ON_ERROR
+                );
+            }
+        }
+
+        return CheckoutSession::query()->create($attributes);
     }
 
     public function test_it_converts_checkout_snapshot_and_completes_session(): void
@@ -82,9 +110,10 @@ class CheckoutOrderAdapterTest extends TestCase
         $this->assertSame('Test product', $item->name);
         $this->assertSame('blue', $item->metadata['options']['color']);
 
+        $freshMetadata = $this->decodedArray($session->fresh()->metadata);
         $this->assertSame(
             $order->getKey(),
-            $session->fresh()->metadata['itmosoft_commerce_adapters']['order_id']
+            $freshMetadata['itmosoft_commerce_adapters']['order_id']
         );
         $this->assertSame('winter', $order->metadata['checkout_metadata']['campaign']);
     }
@@ -138,7 +167,10 @@ class CheckoutOrderAdapterTest extends TestCase
             $this->assertSame(0, Order::query()->count());
             $fresh = $session->fresh();
             $this->assertSame('pending', $fresh->status);
-            $this->assertArrayNotHasKey('itmosoft_commerce_adapters', $fresh->metadata ?? []);
+            $this->assertArrayNotHasKey(
+                'itmosoft_commerce_adapters',
+                $this->decodedArray($fresh->metadata)
+            );
         }
     }
 

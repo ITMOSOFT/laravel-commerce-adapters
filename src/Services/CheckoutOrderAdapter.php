@@ -2,7 +2,6 @@
 
 namespace ItmoSoft\CommerceAdapters\Services;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use ItmoSoft\Checkout\Models\CheckoutSession;
@@ -53,7 +52,7 @@ class CheckoutOrderAdapter
                 throw new RuntimeException('The checkout order adapter metadata key cannot be empty.');
             }
 
-            $metadata = is_array($locked->metadata) ? $locked->metadata : [];
+            $metadata = $this->arrayAttribute($locked->metadata);
             $adapterMetadata = $metadata[$metadataKey] ?? [];
             $linkedOrderId = is_array($adapterMetadata) ? ($adapterMetadata['order_id'] ?? null) : null;
 
@@ -84,7 +83,7 @@ class CheckoutOrderAdapter
             }
 
             $items = $this->mapItems($locked->cart_snapshot ?? []);
-            $totals = is_array($locked->totals) ? $locked->totals : [];
+            $totals = $this->arrayAttribute($locked->totals);
 
             $orderMetadata = [
                 'source' => 'itmosoft-laravel-checkout',
@@ -92,7 +91,7 @@ class CheckoutOrderAdapter
                 'checkout_public_id' => $locked->public_id,
                 'cart_id' => $locked->cart_id,
                 'shipping_method' => $locked->shipping_method,
-                'shipping_details' => $locked->shipping_details,
+                'shipping_details' => $this->arrayAttribute($locked->shipping_details),
                 'checkout_metadata' => $metadata,
             ];
 
@@ -122,13 +121,42 @@ class CheckoutOrderAdapter
                 'order_number' => $order->order_number,
                 'created_at' => now()->toISOString(),
             ];
-            $locked->metadata = $metadata;
+            // Store JSON explicitly: older supported Checkout models do not
+            // define an array cast for metadata, while newer ones do.
+            $locked->metadata = json_encode($metadata, JSON_THROW_ON_ERROR);
             $locked->save();
 
             $this->checkout->complete($locked);
 
             return $order->load('items', 'statusHistory');
         });
+    }
+
+    /**
+     * Normalize JSON-backed attributes across Checkout package versions.
+     *
+     * Older Checkout releases do not cast metadata/shipping_details, while
+     * newer releases may return arrays. Accept both representations.
+     *
+     * @return array<string|int, mixed>
+     */
+    protected function arrayAttribute(mixed $value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_string($value) && $value !== '') {
+            try {
+                $decoded = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+
+                return is_array($decoded) ? $decoded : [];
+            } catch (\JsonException) {
+                return [];
+            }
+        }
+
+        return [];
     }
 
     /**

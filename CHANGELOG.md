@@ -5,7 +5,9 @@
 - Require laravel-orders ^1.0.2 because v1.0.0 and v1.0.1 contain invalid Laravel Composer provider metadata.
 - Simplify CI dependency installation to a single Composer update per matrix entry.
 - Pin CI runner to Ubuntu 24.04 to avoid the announced ubuntu-latest image migration.
-- Remove unused test imports.
+- Normalize JSON-backed Checkout metadata and shipping details across package versions, including models without array casts.
+- Persist the adapter order reference as JSON so repeated conversion remains idempotent on older Checkout models.
+- Make tests decode metadata consistently whether Eloquent returns arrays or JSON strings.
 
 ## [0.1.0] - 2026-11-18
 
