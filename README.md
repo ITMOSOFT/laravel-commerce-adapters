@@ -241,3 +241,14 @@ Use `app(CartPricingAdapter::class)->addPricedItem($cart, $product, $quantity, $
 The Cart → Inventory adapter checks stock before cart additions and quantity changes. It calculates demand across all cart lines for the same product, not only matching option hashes. Use `addAvailableItem()` for a checked addition, `setAvailableQuantity()` for a checked quantity change, `availableQuantity()` for a location-level read, or `assertAvailableForCart()` when composing the check with Cart → Pricing.
 
 This adapter deliberately does not reserve inventory. Cart contents are not commitments, and the existing Inventory package has no cart-reservation lifecycle. Stock is reserved by Inventory → Orders at order processing. Availability can change between the cart check and order reservation; applications must handle an insufficient-stock result during order processing. All participating models must use the application's default database connection. See [Cart → Inventory integration](docs/CART_INVENTORY.md).
+
+## Checkout → Promotions (v0.8.0)
+
+The optional `CheckoutPromotionAdapter` applies a promotion code to a pending checkout using `PromotionService::calculate()`, updates Checkout totals, and stores a promotion snapshot in checkout metadata. It does not consume a redemption when the code is previewed or applied.
+
+```php
+$snapshot = app(\ItmoSoft\CommerceAdapters\Services\CheckoutPromotionAdapter::class)
+    ->applyCode($checkoutSession, 'WELCOME10', context: ['region' => 'PK']);
+```
+
+Use `removePromotion($checkoutSession)` to remove the adapter-owned discount. Call `redeemForOrder()` inside the same database transaction as order creation to consume usage and record the redemption. See [docs/CHECKOUT_PROMOTIONS.md](docs/CHECKOUT_PROMOTIONS.md) for the complete contract and limitations.

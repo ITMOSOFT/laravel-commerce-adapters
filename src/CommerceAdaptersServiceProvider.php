@@ -10,6 +10,7 @@ use ItmoSoft\CommerceAdapters\Services\CartPricingAdapter;
 use ItmoSoft\CommerceAdapters\Services\CartInventoryAdapter;
 use ItmoSoft\CommerceAdapters\Services\CheckoutShippingAdapter;
 use ItmoSoft\CommerceAdapters\Services\CheckoutTaxAdapter;
+use ItmoSoft\CommerceAdapters\Services\CheckoutPromotionAdapter;
 use ItmoSoft\CommerceAdapters\Services\CheckoutOrderAdapter;
 use ItmoSoft\CommerceAdapters\Services\InventoryOrderAdapter;
 use ItmoSoft\CommerceAdapters\Services\PaymentOrderAdapter;
@@ -24,26 +25,19 @@ class CommerceAdaptersServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/commerce-adapters.php', 'itmosoft-commerce-adapters');
 
-        $this->app->singleton(CartPricingAdapter::class);
-        $this->app->alias(CartPricingAdapter::class, 'itmosoft.commerce-adapters.cart-pricing');
-
-        $this->app->singleton(CartInventoryAdapter::class);
-        $this->app->alias(CartInventoryAdapter::class, 'itmosoft.commerce-adapters.cart-inventory');
-
-        $this->app->singleton(CheckoutTaxAdapter::class);
-        $this->app->alias(CheckoutTaxAdapter::class, 'itmosoft.commerce-adapters.checkout-tax');
-
-        $this->app->singleton(CheckoutShippingAdapter::class);
-        $this->app->alias(CheckoutShippingAdapter::class, 'itmosoft.commerce-adapters.checkout-shipping');
-
-        $this->app->singleton(CheckoutOrderAdapter::class);
-        $this->app->alias(CheckoutOrderAdapter::class, 'itmosoft.commerce-adapters.checkout-orders');
-
-        $this->app->singleton(PaymentOrderAdapter::class);
-        $this->app->alias(PaymentOrderAdapter::class, 'itmosoft.commerce-adapters.payment-orders');
-
-        $this->app->singleton(InventoryOrderAdapter::class);
-        $this->app->alias(InventoryOrderAdapter::class, 'itmosoft.commerce-adapters.inventory-orders');
+        foreach ([
+            CartPricingAdapter::class => 'cart-pricing',
+            CartInventoryAdapter::class => 'cart-inventory',
+            CheckoutTaxAdapter::class => 'checkout-tax',
+            CheckoutShippingAdapter::class => 'checkout-shipping',
+            CheckoutPromotionAdapter::class => 'checkout-promotions',
+            CheckoutOrderAdapter::class => 'checkout-orders',
+            PaymentOrderAdapter::class => 'payment-orders',
+            InventoryOrderAdapter::class => 'inventory-orders',
+        ] as $class => $alias) {
+            $this->app->singleton($class);
+            $this->app->alias($class, 'itmosoft.commerce-adapters.'.$alias);
+        }
     }
 
     public function boot(): void
@@ -57,7 +51,6 @@ class CommerceAdaptersServiceProvider extends ServiceProvider
             Event::listen(PaymentFailed::class, PaymentOrderEventListener::class.'@handleFailed');
             Event::listen(PaymentRefundUpdated::class, PaymentOrderEventListener::class.'@handleRefundUpdated');
         }
-
         if (config('itmosoft-commerce-adapters.inventory_orders.enabled', false)) {
             Event::listen(OrderStatusChanged::class, InventoryOrderEventListener::class.'@handle');
         }

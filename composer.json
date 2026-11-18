@@ -1,93 +1,44 @@
 {
-    "name": "itmosoft/laravel-commerce-adapters",
-    "description": "Optional integration adapters connecting independent ITMOSOFT Laravel commerce packages.",
-    "type": "library",
-    "license": "MIT",
-    "require": {
-        "illuminate/contracts": "^12.0 || ^13.0",
-        "illuminate/database": "^12.0 || ^13.0",
-        "illuminate/events": "^12.0 || ^13.0",
-        "illuminate/support": "^12.0 || ^13.0",
-        "itmosoft/laravel-cart": "^1.0 || dev-main",
-        "itmosoft/laravel-checkout": "^1.0 || dev-main",
-        "itmosoft/laravel-inventory": "^1.0 || dev-main",
-        "itmosoft/laravel-orders": "^1.0.2",
-        "itmosoft/laravel-payments": "^1.0 || dev-main",
-        "itmosoft/laravel-pricing": "^1.0 || dev-main",
-        "itmosoft/laravel-shipping": "^1.0 || dev-main",
-        "itmosoft/laravel-tax": "^1.0 || dev-main",
-        "php": "^8.3"
-    },
-    "require-dev": {
-        "orchestra/testbench": "^10.0 || ^11.0",
-        "phpunit/phpunit": "^11.5 || ^12.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "ItmoSoft\\CommerceAdapters\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "ItmoSoft\\CommerceAdapters\\Tests\\": "tests/"
-        }
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/ITMOSOFT/laravel-cart.git",
-            "canonical": false
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/ITMOSOFT/laravel-checkout.git",
-            "canonical": false
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/ITMOSOFT/laravel-inventory.git",
-            "canonical": false
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/ITMOSOFT/laravel-orders.git",
-            "canonical": false
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/ITMOSOFT/laravel-payments.git",
-            "canonical": false
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/ITMOSOFT/laravel-pricing.git",
-            "canonical": false
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/ITMOSOFT/laravel-shipping.git",
-            "canonical": false
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/ITMOSOFT/laravel-tax.git",
-            "canonical": false
-        }
-    ],
-    "scripts": {
-        "test": "phpunit"
-    },
-    "minimum-stability": "stable",
-    "prefer-stable": true,
-    "config": {
-        "sort-packages": true,
-        "allow-plugins": {}
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "ItmoSoft\\CommerceAdapters\\CommerceAdaptersServiceProvider"
-            ]
-        }
-    }
+  "name": "itmosoft/laravel-commerce-adapters",
+  "description": "Optional integration adapters connecting independent ITMOSOFT Laravel commerce packages.",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": "^8.3",
+    "illuminate/contracts": "^12.0 || ^13.0",
+    "illuminate/database": "^12.0 || ^13.0",
+    "illuminate/events": "^12.0 || ^13.0",
+    "illuminate/support": "^12.0 || ^13.0",
+    "itmosoft/laravel-cart": "^1.0 || dev-main",
+    "itmosoft/laravel-checkout": "^1.0 || dev-main",
+    "itmosoft/laravel-inventory": "^1.0 || dev-main",
+    "itmosoft/laravel-orders": "^1.0.2",
+    "itmosoft/laravel-payments": "^1.0 || dev-main",
+    "itmosoft/laravel-pricing": "^1.0 || dev-main",
+    "itmosoft/laravel-promotions": "^1.0 || dev-main",
+    "itmosoft/laravel-shipping": "^1.0 || dev-main",
+    "itmosoft/laravel-tax": "^1.0 || dev-main"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^10.0 || ^11.0",
+    "phpunit/phpunit": "^11.5 || ^12.0"
+  },
+  "autoload": {"psr-4": {"ItmoSoft\\CommerceAdapters\\": "src/"}},
+  "autoload-dev": {"psr-4": {"ItmoSoft\\CommerceAdapters\\Tests\\": "tests/"}},
+  "repositories": [
+    {"type":"vcs","url":"https://github.com/ITMOSOFT/laravel-cart.git","canonical":false},
+    {"type":"vcs","url":"https://github.com/ITMOSOFT/laravel-checkout.git","canonical":false},
+    {"type":"vcs","url":"https://github.com/ITMOSOFT/laravel-inventory.git","canonical":false},
+    {"type":"vcs","url":"https://github.com/ITMOSOFT/laravel-orders.git","canonical":false},
+    {"type":"vcs","url":"https://github.com/ITMOSOFT/laravel-payments.git","canonical":false},
+    {"type":"vcs","url":"https://github.com/ITMOSOFT/laravel-pricing.git","canonical":false},
+    {"type":"vcs","url":"https://github.com/ITMOSOFT/laravel-promotions.git","canonical":false},
+    {"type":"vcs","url":"https://github.com/ITMOSOFT/laravel-shipping.git","canonical":false},
+    {"type":"vcs","url":"https://github.com/ITMOSOFT/laravel-tax.git","canonical":false}
+  ],
+  "scripts": {"test":"phpunit"},
+  "minimum-stability":"stable",
+  "prefer-stable":true,
+  "config":{"sort-packages":true,"allow-plugins":{}},
+  "extra":{"laravel":{"providers":["ItmoSoft\\CommerceAdapters\\CommerceAdaptersServiceProvider"]}}
 }

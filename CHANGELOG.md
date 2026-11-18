@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.8.0] - 2026-11-18
+
+### Added
+- Added optional Checkout → Promotions integration through `CheckoutPromotionAdapter`.
+- Added promotion-code calculation and checkout discount application using the Promotions package public service API.
+- Added checkout promotion snapshots, removal of adapter-owned discounts, and order-time redemption with idempotent lookup by promotion/order reference.
+- Added nine feature tests covering application, replacement, removal, unknown codes, checkout state, discount ownership, redemption idempotency, and usage-limit enforcement.
+
+### Notes
+- Promotion usage is not reserved during calculation/application; usage limits are enforced by the Promotions package when redemption is recorded.
+- Order creation and redemption should run in the same outer database transaction.
+- No existing adapter behavior is intentionally changed.
+
+
+## [0.7.1] - 2026-11-18
+
+### Fixed
+- Resolve Composer dependencies directly for each CI matrix job before running PHPUnit, avoiding installation from an incompatible committed lockfile on PHP 8.4.
+
+
 ## [0.7.0] - 2026-11-18
 
 ### Added
