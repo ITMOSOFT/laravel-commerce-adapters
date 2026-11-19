@@ -9,6 +9,8 @@ use ItmoSoft\Inventory\InventoryServiceProvider;
 use ItmoSoft\Orders\OrdersServiceProvider;
 use ItmoSoft\Payments\PaymentsServiceProvider;
 use ItmoSoft\Pricing\PricingServiceProvider;
+use ItmoSoft\ProductCatalog\ProductCatalogServiceProvider;
+use ItmoSoft\ProductVariants\ProductVariantsServiceProvider;
 use ItmoSoft\Promotions\PromotionsServiceProvider;
 use ItmoSoft\Shipping\ShippingServiceProvider;
 use ItmoSoft\Tax\TaxServiceProvider;
@@ -28,6 +30,8 @@ abstract class TestCase extends Orchestra
             ShippingServiceProvider::class,
             TaxServiceProvider::class,
             PromotionsServiceProvider::class,
+            ProductCatalogServiceProvider::class,
+            ProductVariantsServiceProvider::class,
             CommerceAdaptersServiceProvider::class,
         ];
     }
@@ -42,12 +46,16 @@ abstract class TestCase extends Orchestra
         $app['config']->set('pricing.table_prefix', 'pricing_');
         $app['config']->set('pricing.default_currency', 'USD');
         $app['config']->set('promotions.table_prefix', 'promotion_');
+        $app['config']->set('product-catalog.table_prefix', 'catalog_');
+        $app['config']->set('product-variants.table_prefix', 'itmosoft_');
         $app['config']->set('itmosoft-checkout.rules', [
             'require_billing_address' => true, 'require_shipping_address' => true, 'require_shipping_method' => true,
         ]);
         $app['config']->set('itmosoft-commerce-adapters.checkout_orders.customer_type', 'user');
         $app['config']->set('itmosoft-commerce-adapters.payments_orders.enabled', true);
         $app['config']->set('itmosoft-commerce-adapters.inventory_orders.enabled', true);
+        $app['config']->set('itmosoft-commerce-adapters.product_catalog_variants.enabled', true);
+        $app['config']->set('itmosoft-commerce-adapters.product_catalog_variants.standalone_models_enabled', false);
     }
 
     protected function setUp(): void

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0e7e7514e09c98ac7e29280eeb3e285d",
+    "content-hash": "648fe3e08e5f1b1f1b2ddbcdb65107ef",
     "packages": [
         {
             "name": "brick/math",
@@ -857,16 +857,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "3.4.0",
+            "version": "3.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "180bd6fcebd1dc289cbec5c576135f4b6f576e02"
+                "reference": "b7d9cd94918e1f042d22cf188a7a866e5906bf1d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/180bd6fcebd1dc289cbec5c576135f4b6f576e02",
-                "reference": "180bd6fcebd1dc289cbec5c576135f4b6f576e02",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/b7d9cd94918e1f042d22cf188a7a866e5906bf1d",
+                "reference": "b7d9cd94918e1f042d22cf188a7a866e5906bf1d",
                 "shasum": ""
             },
             "require": {
@@ -889,6 +889,7 @@
                 "phpunit/phpunit": "^9.6.34"
             },
             "suggest": {
+                "ext-intl": "Convert internationalized hosts with Idna",
                 "laminas/laminas-httphandlerrunner": "Emit PSR-7 responses"
             },
             "type": "library",
@@ -957,7 +958,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/3.4.0"
+                "source": "https://github.com/guzzle/psr7/tree/3.5.0"
             },
             "funding": [
                 {
@@ -973,7 +974,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-11-13T03:03:24+00:00"
+            "time": "2026-11-18T15:29:09+00:00"
         },
         {
             "name": "guzzlehttp/uri-template",
@@ -1407,6 +1408,100 @@
                 "issues": "https://github.com/ITMOSOFT/laravel-pricing/issues"
             },
             "time": "2026-11-04T11:51:22+00:00"
+        },
+        {
+            "name": "itmosoft/laravel-product-catalog",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ITMOSOFT/laravel-product-catalog.git",
+                "reference": "0412381af868a21ab4e07e128fed09e8c828710b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ITMOSOFT/laravel-product-catalog/zipball/0412381af868a21ab4e07e128fed09e8c828710b",
+                "reference": "0412381af868a21ab4e07e128fed09e8c828710b",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "^12.0 || ^13.0",
+                "illuminate/support": "^12.0 || ^13.0",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^10.0 || ^11.0",
+                "phpunit/phpunit": "^11.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "ItmoSoft\\ProductCatalog\\ProductCatalogServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "ItmoSoft\\ProductCatalog\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "A reusable Laravel product catalog package with products, categories, brands, attributes, and variants.",
+            "support": {
+                "issues": "https://github.com/ITMOSOFT/laravel-product-catalog/issues",
+                "source": "https://github.com/ITMOSOFT/laravel-product-catalog/tree/v1.0.0"
+            },
+            "time": "2026-11-04T07:23:06+00:00"
+        },
+        {
+            "name": "itmosoft/laravel-product-variants",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ITMOSOFT/laravel-product-variants.git",
+                "reference": "8221c9b6ae3fe1e8a30c1af52288a23f315292a7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ITMOSOFT/laravel-product-variants/zipball/8221c9b6ae3fe1e8a30c1af52288a23f315292a7",
+                "reference": "8221c9b6ae3fe1e8a30c1af52288a23f315292a7",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "^12.0 || ^13.0",
+                "illuminate/support": "^12.0 || ^13.0",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^10.0 || ^11.0",
+                "phpunit/phpunit": "^11.0 || ^12.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "ItmoSoft\\ProductVariants\\ProductVariantsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "ItmoSoft\\ProductVariants\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Product variants, SKUs, option values and price overrides for Laravel eCommerce applications.",
+            "support": {
+                "issues": "https://github.com/ITMOSOFT/laravel-product-variants/issues",
+                "source": "https://github.com/ITMOSOFT/laravel-product-variants/tree/v1.0.1"
+            },
+            "time": "2026-11-19T05:42:30+00:00"
         },
         {
             "name": "itmosoft/laravel-promotions",

@@ -14,7 +14,6 @@ return [
         'default_weight' => env('ITMOSOFT_CHECKOUT_SHIPPING_DEFAULT_WEIGHT', 0),
     ],
     'checkout_promotions' => [
-        // Promotion discount exclusively owns Checkout's single discount total.
         'metadata_key' => 'itmosoft_promotion',
     ],
     'payments_orders' => [
@@ -28,5 +27,10 @@ return [
     'inventory_orders' => [
         'enabled' => env('ITMOSOFT_INVENTORY_ORDERS_ENABLED', false),
         'location_id' => env('ITMOSOFT_INVENTORY_LOCATION_ID'),
+    ],
+    'product_catalog_variants' => [
+        'enabled' => env('ITMOSOFT_PRODUCT_CATALOG_VARIANTS_ENABLED', true),
+        // Set true only when other polymorphic product models also use the standalone variants table.
+        'standalone_models_enabled' => env('ITMOSOFT_PRODUCT_VARIANTS_STANDALONE_MODELS_ENABLED', false),
     ],
 ];
