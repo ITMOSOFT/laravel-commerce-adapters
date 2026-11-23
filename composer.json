@@ -16,7 +16,7 @@
     "itmosoft/laravel-payments": "^1.0 || dev-main",
     "itmosoft/laravel-pricing": "^1.0 || dev-main",
     "itmosoft/laravel-product-catalog": "^1.0",
-    "itmosoft/laravel-product-variants": "^1.0",
+    "itmosoft/laravel-product-variants": "^1.0.1",
     "itmosoft/laravel-promotions": "^1.0 || dev-main",
     "itmosoft/laravel-shipping": "^1.0 || dev-main",
     "itmosoft/laravel-tax": "^1.0 || dev-main"
