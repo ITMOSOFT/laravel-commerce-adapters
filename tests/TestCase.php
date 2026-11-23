@@ -15,12 +15,14 @@ use ItmoSoft\Promotions\PromotionsServiceProvider;
 use ItmoSoft\Shipping\ShippingServiceProvider;
 use ItmoSoft\Tax\TaxServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
+use ItmoSoft\Money\MoneyServiceProvider;
 
 abstract class TestCase extends Orchestra
 {
     protected function getPackageProviders($app): array
     {
         return [
+            MoneyServiceProvider::class,
             CartServiceProvider::class,
             PricingServiceProvider::class,
             CheckoutServiceProvider::class,

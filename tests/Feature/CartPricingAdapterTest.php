@@ -159,4 +159,37 @@ class CartPricingAdapterTest extends TestCase
         $this->assertNotSame($first->id, $second->id);
         $this->assertSame(2, $cart->items()->count());
     }
+    
+    
+public function test_half_up_rounding_uses_money_manager_for_pricing_amounts(): void
+{
+    $product = $this->product();
+    $this->price($product, ['amount' => '1.0050']);
+    $cart = $this->cart();
+
+    $item = app(CartPricingAdapter::class)->addPricedItem($cart, $product);
+
+    $this->assertSame('1.01', $item->unit_price);
+    $this->assertSame('1.01', $item->line_total);
+    $this->assertSame('1.0050', $item->price_snapshot['resolved_amount']);
+}
+
+public function test_cart_rejects_currency_with_unsupported_precision(): void
+{
+    $product = $this->product();
+    $this->price($product, ['currency' => 'JPY', 'amount' => '100']);
+    $cart = Cart::query()->create([
+        'public_id' => (string) \Illuminate\Support\Str::uuid(),
+        'user_id' => 42,
+        'session_id' => null,
+        'currency' => 'JPY',
+        'status' => 'active',
+        'metadata' => [],
+    ]);
+
+    $this->expectException(CartPricingException::class);
+
+    app(CartPricingAdapter::class)->addPricedItem($cart, $product);
+}
+
 }

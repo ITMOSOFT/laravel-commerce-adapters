@@ -12,6 +12,8 @@ use ItmoSoft\CommerceAdapters\Exceptions\CartPricingException;
 use ItmoSoft\Pricing\Models\Price;
 use ItmoSoft\Pricing\Services\PriceResolver;
 use InvalidArgumentException;
+use ItmoSoft\Money\Services\MoneyManager;
+use Throwable;
 
 /**
  * Resolves a trusted catalog price and passes it to CartManager, which owns
@@ -21,7 +23,8 @@ class CartPricingAdapter
 {
     public function __construct(
         protected PriceResolver $prices,
-        protected CartManager $carts,
+	protected CartManager $carts,
+    	protected MoneyManager $money,
     ) {
     }
 
@@ -100,14 +103,36 @@ class CartPricingAdapter
                 throw new CartPricingException('The resolved price currency does not match the cart currency.');
             }
 
-            $rawAmount = (string) $price->amount;
-            if (! preg_match('/^\\d+(?:\\.\\d+)?$/', $rawAmount)) {
-                throw new CartPricingException('The resolved price must be a non-negative decimal amount.');
-            }
+	     $rawAmount = (string) $price->amount;
 
-            // Round the database decimal string without converting through a
-            // binary float. Cart's schema persists monetary values at 2dp.
-            $cartAmount = $this->roundHalfUpToCartPrecision($rawAmount);
+	if (! preg_match('/^\d+(?:\.\d+)?$/', $rawAmount)) {
+	    throw new CartPricingException('The resolved price must be a non-negative decimal amount.');
+	}
+
+	try {
+	    if ($this->money->precision($currency) !== 2) {
+		throw new CartPricingException(
+		    "Cart currently supports currencies configured with exactly 2 decimal places; [{$currency}] is not supported."
+		);
+	    }
+
+	    $cartAmount = (string) $this->money
+		->of($rawAmount, $currency, 2)
+		->getAmount();
+
+	    if (! preg_match('/^\d{1,12}\.\d{2}$/', $cartAmount)) {
+		throw new CartPricingException(
+		    'The resolved price exceeds the Cart DECIMAL(14,2) storage range.'
+		);
+	    }
+	} catch (CartPricingException $exception) {
+	    throw $exception;
+	} catch (Throwable $exception) {
+	    throw new CartPricingException(
+		"Unable to normalize the resolved {$currency} price.",
+		previous: $exception,
+	    );
+	}
 
             $snapshot = [
                 'source' => 'itmosoft-laravel-pricing',
@@ -122,7 +147,7 @@ class CartPricingAdapter
                 'context' => $price->context ?? [],
                 'quantity' => $resolvedQuantity,
                 'resolved_at' => ($at ? \Illuminate\Support\Carbon::instance($at) : now())->toISOString(),
-                'rounding' => 'half_up_2dp',
+                'rounding' => 'itmosoft-money-half-up-2dp',
             ];
 
             return $this->carts->add(
@@ -155,49 +180,6 @@ class CartPricingAdapter
             context: $context,
             at: $at,
         );
-    }
-
-
-    /** Round a non-negative decimal string to Cart's fixed two-decimal scale. */
-    protected function roundHalfUpToCartPrecision(string $amount): string
-    {
-        [$whole, $fraction] = array_pad(explode('.', $amount, 2), 2, '');
-        $whole = ltrim($whole, '0');
-        $whole = $whole === '' ? '0' : $whole;
-        $fraction = str_pad($fraction, 3, '0');
-        $cents = substr($fraction, 0, 2);
-
-        if ((int) ($fraction[2] ?? '0') >= 5) {
-            $cents = (string) ((int) $cents + 1);
-            if (strlen($cents) > 2) {
-                $cents = '00';
-                $whole = $this->incrementDecimalInteger($whole);
-            } else {
-                $cents = str_pad($cents, 2, '0', STR_PAD_LEFT);
-            }
-        }
-
-        // Cart's DECIMAL(14,2) column allows at most 12 integer digits.
-        if (strlen($whole) > 12) {
-            throw new CartPricingException('The resolved price exceeds the Cart DECIMAL(14,2) storage range.');
-        }
-
-        return $whole.'.'.$cents;
-    }
-
-    /** Increment a non-negative integer represented as a decimal string. */
-    protected function incrementDecimalInteger(string $value): string
-    {
-        $digits = str_split($value);
-        for ($index = count($digits) - 1; $index >= 0; $index--) {
-            if ($digits[$index] !== '9') {
-                $digits[$index] = (string) ((int) $digits[$index] + 1);
-                return implode('', $digits);
-            }
-            $digits[$index] = '0';
-        }
-
-        return '1'.implode('', $digits);
     }
 
     /** Match CartManager's options hash so the adapter predicts its merge line. */

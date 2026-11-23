@@ -19,7 +19,8 @@
     "itmosoft/laravel-product-variants": "^1.0.1",
     "itmosoft/laravel-promotions": "^1.0 || dev-main",
     "itmosoft/laravel-shipping": "^1.0 || dev-main",
-    "itmosoft/laravel-tax": "^1.0 || dev-main"
+    "itmosoft/laravel-tax": "^1.0 || dev-main",
+    "itmosoft/laravel-money": "^0.1.1"
   },
   "require-dev": {
     "orchestra/testbench": "^10.0 || ^11.0",
